@@ -1,6 +1,6 @@
-name: "my-website"
+name: "HKU_workshop"
 navbar:
-  title: "My Website"
+  title: "HKU Workshop, June 2019"
   left:
     - text: "Home"
       href: index.html
@@ -10,8 +10,8 @@ navbar:
       href: scMerge.html
     - text: "Downstream Analysis"
       href: downstream.html
-    - text: "About"
-      href: about.html
+    - text: "acknowledgement"
+      href: acknowledgement.html
 output_dir: "."
 output:
   html_document:
