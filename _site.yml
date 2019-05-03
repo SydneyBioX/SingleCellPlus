@@ -12,7 +12,7 @@ navbar:
       href: downstream.html
     - text: "acknowledgement"
       href: acknowledgement.html
-output_dir: "."
+
 output:
   html_document:
     theme: paper
