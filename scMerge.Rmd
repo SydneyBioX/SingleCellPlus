@@ -1,0 +1,12 @@
+---
+title: "scMerge package"
+author: "Kevin Wang"
+date: "03/05/2019"
+output: html_document
+---
+
+Here is how we perform `scMerge` on our single cell data
+```{r}
+library(scMerge)
+```
+

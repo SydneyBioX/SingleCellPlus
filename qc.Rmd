@@ -1,0 +1,12 @@
+---
+title: "QC of single cell data"
+author: "Kevin Wang"
+date: "03/05/2019"
+output: html_document
+---
+
+Here is how we QC our single cell data
+```{r, eval = FALSE}
+na.omit()
+```
+
