@@ -1,6 +1,6 @@
 ---
 title: "QC of single cell data"
-author: "Kevin Wang"
+author: "USYD"
 date: "03/05/2019"
 output: html_document
 ---

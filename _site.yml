@@ -1,6 +1,6 @@
-name: "HKU_workshop"
+name: "SingleCellPlus"
 navbar:
-  title: "HKU Workshop, June 2019"
+  title: "SingleCellPlus - HKU Workshop"
   left:
     - text: "Home"
       href: index.html
