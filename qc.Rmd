@@ -1,12 +1,11 @@
 ---
 title: "QC of single cell data"
-author: "USYD"
+author: "Sydney Precision Bioinformatics Group"
 date: "03/05/2019"
 output: html_document
 ---
 
-Here is how we QC our single cell data
-```{r, eval = FALSE}
-na.omit()
-```
 
+As discussed in 3rd May 2019, Yue Cao and Hani Kim will be jointly working on this part of the workshop. 
+
+However, the raw data will be prepared by Yingxin. 

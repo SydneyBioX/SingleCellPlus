@@ -1,3 +1,4 @@
+# This file controls the layout of the website. 
 name: "SingleCellPlus"
 navbar:
   title: "SingleCellPlus - HKU Workshop"
@@ -12,7 +13,7 @@ navbar:
       href: downstream.html
     - text: "acknowledgement"
       href: acknowledgement.html
-
+output_dir: "."
 output:
   html_document:
     theme: paper

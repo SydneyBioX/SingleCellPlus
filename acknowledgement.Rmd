@@ -1,10 +1,16 @@
 ---
 title: "Acknowledgement HKU workshop"
-author: "USYD"
+author: "Sydney Precision Bioinformatics Group"
 date: "03/05/2019"
 output: html_document
 ---
 
-This is the acknowledgement page. 
++ This workshop was funded by Single Cell Plus. 
 
-This website was constructed upon consultations from https://jules32.github.io/rmarkdown-website-tutorial/. 
++ We would like to thank many people. 
+
++ Dr. Kitty Lo was funded by... 
+
++ Mr. Kevin Wang was funded by... 
+
++ This website was constructed upon consultations from https://jules32.github.io/rmarkdown-website-tutorial/. 

@@ -1,12 +1,58 @@
 ---
 title: "scMerge package"
-author: "USYD"
+author: "Sydney Precision Bioinformatics Group"
 date: "03/05/2019"
 output: html_document
 ---
 
-Here is how we perform `scMerge` on our single cell data
+
+As discussed in 3rd May 2019, Kevin will work on this part of the workshop.
+
+However, the raw data will be prepared by Yingxin and QC of the data are yet to be done. 
+
+# Introduction 
+
+scMerge is a method developed by the Sydney Precision Bioinformatics Group. It aims to merge multiple scRNA-Seq data so that researchers can look for biological signals on data pooled from multiple sources. The key to achieving a good merge is to remove the **noise**. 
+
+Here are some plots where the raw data is separated by the data-batches but not cell types. 
+
+
+scMerge corrects data-batch separations by 
+
+  1. identifying cells of identical cell types and pooling these together
+  2. identitying data-batch noises using Stably Expressed Genes (SEGs) and removing these from the data. 
+  
+Thus, scMerge can be thought of a two-step process!
+
+# scMerge is a two-step process (Change this once our data becomes available)
+
+As mentioned above, scMerge is a two-step method. Let's run the built-in example of `scMerge` first to understand what it is doing. 
+
 ```{r}
 library(scMerge)
+## Loading example data
+data('example_sce', package = 'scMerge')
+## Previously computed stably expressed genes
+data('segList_ensemblGeneID', package = 'scMerge')
+## Running an example data with minimal inputs
+sce_mESC <- scMerge(sce_combine = example_sce,
+                    ctl = segList_ensemblGeneID$mouse$mouse_scSEG,
+                    kmeansK = c(3, 3),
+                    assay_name = 'scMerge')
+
+scater::plotPCA(sce_mESC, colour_by = 'cellTypes', shape = 'batch',
+                 run_args = list(exprs_values = 'logcounts'))
+
+scater::plotPCA(sce_mESC, colour_by = 'cellTypes', shape = 'batch',
+                 run_args = list(exprs_values = 'scMerge'))
 ```
 
+
+This example shows the minimum inputs of the `scMerge` function. 
+
+
+# Supervised scMerge
+
+# Unsupervised scMerge
+
+# Extension: semi-supervised scMerge
