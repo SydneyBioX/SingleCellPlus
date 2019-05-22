@@ -332,53 +332,327 @@ $(document).ready(function () {
 </ol>
 <p>Thus, scMerge can be thought of a two-step process!</p>
 </div>
-<div id="scmerge-is-a-two-step-process-change-this-once-our-data-becomes-available" class="section level1">
-<h1>scMerge is a two-step process (Change this once our data becomes available)</h1>
-<p>As mentioned above, scMerge is a two-step method. Let’s run the built-in example of <code>scMerge</code> first to understand what it is doing.</p>
-<pre class="r"><code>library(scMerge)</code></pre>
-<pre><code>## Registered S3 methods overwritten by &#39;ggplot2&#39;:
-##   method         from 
-##   [.quosures     rlang
-##   c.quosures     rlang
-##   print.quosures rlang</code></pre>
-<pre class="r"><code>## Loading example data
-data(&#39;example_sce&#39;, package = &#39;scMerge&#39;)
-## Previously computed stably expressed genes
-data(&#39;segList_ensemblGeneID&#39;, package = &#39;scMerge&#39;)
-## Running an example data with minimal inputs
-sce_mESC &lt;- scMerge(sce_combine = example_sce,
-                    ctl = segList_ensemblGeneID$mouse$mouse_scSEG,
-                    kmeansK = c(3, 3),
-                    assay_name = &#39;scMerge&#39;)</code></pre>
-<pre><code>## Step 1: Computation will run in serial</code></pre>
-<pre><code>##   group batch cluster
-## 1     3     1       1
-## 2     3     2       1
-## 3     1     1       2
-## 4     1     2       3
-## 5     2     1       3
-## 6     2     2       2
-## Dimension of the replicates mapping matrix: 
-## [1] 200 105</code></pre>
-<pre><code>## Step 2: Performing RUV normalisation. This will take minutes to hours.</code></pre>
-<pre><code>## scMerge complete!</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
-<pre class="r"><code>scater::plotPCA(sce_mESC, colour_by = &#39;cellTypes&#39;, shape = &#39;batch&#39;,
-                 run_args = list(exprs_values = &#39;logcounts&#39;))</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-1-2.png" width="672" /></p>
-<pre class="r"><code>scater::plotPCA(sce_mESC, colour_by = &#39;cellTypes&#39;, shape = &#39;batch&#39;,
-                 run_args = list(exprs_values = &#39;scMerge&#39;))</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-1-3.png" width="672" /></p>
-<p>This example shows the minimum inputs of the <code>scMerge</code> function.</p>
-</div>
 <div id="supervised-scmerge" class="section level1">
 <h1>Supervised scMerge</h1>
+<p>We will begin with a liver dataset. The data are stored as four separate RDS files (this is similar to a <code>RData</code> file, but only one data can be stored in each RDS file).</p>
+<table style="width:100%;">
+<colgroup>
+<col width="5%" />
+<col width="8%" />
+<col width="6%" />
+<col width="21%" />
+<col width="9%" />
+<col width="8%" />
+<col width="6%" />
+<col width="13%" />
+<col width="9%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>ID</th>
+<th>Author</th>
+<th>DOI or URL</th>
+<th>Protocol</th>
+<th>Organism</th>
+<th>Tissue</th>
+<th># of cell types</th>
+<th># of cells</th>
+<th># of batches</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Liver</td>
+<td>GSE87795</td>
+<td>Su</td>
+<td>10.1186/s12864-017-4342-x</td>
+<td>SMARTer/C1</td>
+<td>Mouse</td>
+<td>Liver</td>
+<td>6</td>
+<td>1236</td>
+<td></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>GSE90047</td>
+<td>Yang</td>
+<td>10.1002/hep.29353</td>
+<td>Smart-Seq2</td>
+<td></td>
+<td></td>
+<td>2</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>GSE87038</td>
+<td>Dong</td>
+<td>10.1186/s13059-018-1416-2</td>
+<td>STRT-seq</td>
+<td></td>
+<td></td>
+<td>3</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>GSE96981</td>
+<td>Camp</td>
+<td>10.1038/nature22796</td>
+<td>SMARTer/C1</td>
+<td></td>
+<td></td>
+<td>3</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>su = readRDS(&quot;data/sce_GSE87795.rds&quot;)
+yang = readRDS(&quot;data/sce_GSE90047.rds&quot;)
+dong = readRDS(&quot;data/sce_GSE87038.rds&quot;)
+camp = readRDS(&quot;data/sce_GSE96981.rds&quot;)
+sce_list = list(su = su, yang = yang, dong = dong, camp = camp)</code></pre>
+<pre class="r"><code>library(scMerge)
+library(scater)
+library(dplyr)
+
+
+purrr::map(sce_list, ~ colData(.x) %&gt;% colnames)</code></pre>
+<pre><code>## $su
+##  [1] &quot;batch&quot;                                     
+##  [2] &quot;stage&quot;                                     
+##  [3] &quot;cellTypes&quot;                                 
+##  [4] &quot;total_features&quot;                            
+##  [5] &quot;log10_total_features&quot;                      
+##  [6] &quot;total_counts&quot;                              
+##  [7] &quot;log10_total_counts&quot;                        
+##  [8] &quot;pct_counts_top_50_features&quot;                
+##  [9] &quot;pct_counts_top_100_features&quot;               
+## [10] &quot;pct_counts_top_200_features&quot;               
+## [11] &quot;pct_counts_top_500_features&quot;               
+## [12] &quot;total_features_endogenous&quot;                 
+## [13] &quot;log10_total_features_endogenous&quot;           
+## [14] &quot;total_counts_endogenous&quot;                   
+## [15] &quot;log10_total_counts_endogenous&quot;             
+## [16] &quot;pct_counts_endogenous&quot;                     
+## [17] &quot;pct_counts_top_50_features_endogenous&quot;     
+## [18] &quot;pct_counts_top_100_features_endogenous&quot;    
+## [19] &quot;pct_counts_top_200_features_endogenous&quot;    
+## [20] &quot;pct_counts_top_500_features_endogenous&quot;    
+## [21] &quot;total_features_feature_control&quot;            
+## [22] &quot;log10_total_features_feature_control&quot;      
+## [23] &quot;total_counts_feature_control&quot;              
+## [24] &quot;log10_total_counts_feature_control&quot;        
+## [25] &quot;pct_counts_feature_control&quot;                
+## [26] &quot;pct_counts_top_50_features_feature_control&quot;
+## [27] &quot;total_features_ERCC&quot;                       
+## [28] &quot;log10_total_features_ERCC&quot;                 
+## [29] &quot;total_counts_ERCC&quot;                         
+## [30] &quot;log10_total_counts_ERCC&quot;                   
+## [31] &quot;pct_counts_ERCC&quot;                           
+## [32] &quot;pct_counts_top_50_features_ERCC&quot;           
+## [33] &quot;is_cell_control&quot;                           
+## 
+## $yang
+##  [1] &quot;stage&quot;                                     
+##  [2] &quot;batch&quot;                                     
+##  [3] &quot;cellTypes&quot;                                 
+##  [4] &quot;total_features&quot;                            
+##  [5] &quot;log10_total_features&quot;                      
+##  [6] &quot;total_counts&quot;                              
+##  [7] &quot;log10_total_counts&quot;                        
+##  [8] &quot;pct_counts_top_50_features&quot;                
+##  [9] &quot;pct_counts_top_100_features&quot;               
+## [10] &quot;pct_counts_top_200_features&quot;               
+## [11] &quot;pct_counts_top_500_features&quot;               
+## [12] &quot;total_features_endogenous&quot;                 
+## [13] &quot;log10_total_features_endogenous&quot;           
+## [14] &quot;total_counts_endogenous&quot;                   
+## [15] &quot;log10_total_counts_endogenous&quot;             
+## [16] &quot;pct_counts_endogenous&quot;                     
+## [17] &quot;pct_counts_top_50_features_endogenous&quot;     
+## [18] &quot;pct_counts_top_100_features_endogenous&quot;    
+## [19] &quot;pct_counts_top_200_features_endogenous&quot;    
+## [20] &quot;pct_counts_top_500_features_endogenous&quot;    
+## [21] &quot;total_features_feature_control&quot;            
+## [22] &quot;log10_total_features_feature_control&quot;      
+## [23] &quot;total_counts_feature_control&quot;              
+## [24] &quot;log10_total_counts_feature_control&quot;        
+## [25] &quot;pct_counts_feature_control&quot;                
+## [26] &quot;pct_counts_top_50_features_feature_control&quot;
+## [27] &quot;total_features_ERCC&quot;                       
+## [28] &quot;log10_total_features_ERCC&quot;                 
+## [29] &quot;total_counts_ERCC&quot;                         
+## [30] &quot;log10_total_counts_ERCC&quot;                   
+## [31] &quot;pct_counts_ERCC&quot;                           
+## [32] &quot;pct_counts_top_50_features_ERCC&quot;           
+## [33] &quot;is_cell_control&quot;                           
+## 
+## $dong
+##  [1] &quot;cellTypes1&quot;                  &quot;stage&quot;                      
+##  [3] &quot;cellTypes&quot;                   &quot;total_features&quot;             
+##  [5] &quot;log10_total_features&quot;        &quot;total_counts&quot;               
+##  [7] &quot;log10_total_counts&quot;          &quot;pct_counts_top_50_features&quot; 
+##  [9] &quot;pct_counts_top_100_features&quot; &quot;pct_counts_top_200_features&quot;
+## [11] &quot;pct_counts_top_500_features&quot; &quot;is_cell_control&quot;            
+## 
+## $camp
+## [1] &quot;cellTypes&quot; &quot;stage&quot;</code></pre>
+<pre class="r"><code>sce_combine = scMerge::sce_cbind(sce_list = sce_list, method = &quot;union&quot;, colData_names = c(&quot;cellTypes&quot;, &quot;stage&quot;))</code></pre>
+<pre><code>## The assay named &#39;counts&#39; will be used to determine the proportion of zeroes for each batch</code></pre>
+<pre class="r"><code>sce_combine</code></pre>
+<pre><code>## class: SingleCellExperiment 
+## dim: 23110 1248 
+## metadata(0):
+## assays(2): counts logcounts
+## rownames(23110): ENSMUSG00000102331 ENSMUSG00000025902 ...
+##   __ambiguous __alignment_not_unique
+## rowData names(0):
+## colnames(1248): E11.5_C07 E11.5_C44 ... F5A_E16.5 F6A_E16.5
+## colData names(3): cellTypes stage batch
+## reducedDimNames(0):
+## spikeNames(0):</code></pre>
+<pre class="r"><code>data(&quot;segList_ensemblGeneID&quot;, package = &quot;scMerge&quot;)
+
+sce_combine &lt;- scMerge(sce_combine = sce_combine, 
+                       ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
+                       kmeansK = c(6,2,3,3),
+                       exprs = &quot;logcounts&quot;,
+                       hvg_exprs = &quot;counts&quot;,
+                       marker = NULL,
+                       ruvK = 20,
+                       cell_type = NULL,
+                       dist = &quot;cor&quot;,
+                       replicate_prop = 1,
+                       WV = sce_combine$stage,
+                       # WV_marker = c(&quot;Afp&quot;,&quot;Alb&quot;,&quot;Epcam&quot;),
+                       WV_marker = c(&quot;ENSMUSG00000045394&quot;,&quot;ENSMUSG00000054932&quot;,&quot;ENSMUSG00000045394&quot;),
+                       return_all_RUV = FALSE,
+                       assay_name = &quot;scMerge_scSEG&quot;,
+                       verbose = TRUE,
+                       fast_svd = FALSE)</code></pre>
+<pre><code>## Step 1: Computation will run in serial</code></pre>
+<pre><code>## Performing unsupervised scMerge with: 
+##  1. No cell type information 
+##  2. Cell type indices not revelant here 
+##  3. Mutual nearest neighbour matching 
+##  4. No supplied marker and no supplied marker_list for MNN clustering 
+##     Finding Highly Variable Genes for clustering 
+##     4515 HVG were found 
+##  5. PCA and Kmeans clustering will be performed on each batch 
+##  6. Create Mutual Nearest Clusters. Preview cells-cell_type matching output matrix:</code></pre>
+<pre><code>##   group batch cluster
+## 1     1     1       2
+## 2     1     2       1
+## 3     1     3       2
+## 4     4     1       5
+## 5     4     3       1
+## 6     2     1       6
+##  7. Performing semi-supervised scMerge with wanted variation 
+## Dimension of the replicates mapping matrix: 
+## [1] 1248   19</code></pre>
+<pre><code>## Step 2: Performing RUV normalisation. This will take minutes to hours.</code></pre>
+<pre><code>## scMerge complete!</code></pre>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>scater::plotTSNE(sce_combine, 
+                colour_by = &#39;cellTypes&#39;, shape = &#39;batch&#39;,
+                run_args = list(exprs_values = &#39;logcounts&#39;))</code></pre>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre class="r"><code>scater::plotTSNE(sce_combine, 
+                colour_by = &#39;cellTypes&#39;, shape = &#39;batch&#39;,
+                run_args = list(exprs_values = &#39;scMerge_scSEG&#39;))</code></pre>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-5-2.png" width="672" /></p>
 </div>
 <div id="unsupervised-scmerge" class="section level1">
 <h1>Unsupervised scMerge</h1>
 </div>
 <div id="extension-semi-supervised-scmerge" class="section level1">
 <h1>Extension: semi-supervised scMerge</h1>
+</div>
+<div id="session-info" class="section level1">
+<h1>Session Info</h1>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>## R version 3.6.0 (2019-04-26)
+## Platform: x86_64-apple-darwin15.6.0 (64-bit)
+## Running under: macOS High Sierra 10.13.6
+## 
+## Matrix products: default
+## BLAS:   /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib
+## LAPACK: /Library/Frameworks/R.framework/Versions/3.6/Resources/lib/libRlapack.dylib
+## 
+## locale:
+## [1] en_AU.UTF-8/en_AU.UTF-8/en_AU.UTF-8/C/en_AU.UTF-8/en_AU.UTF-8
+## 
+## attached base packages:
+## [1] parallel  stats4    stats     graphics  grDevices utils     datasets 
+## [8] methods   base     
+## 
+## other attached packages:
+##  [1] dplyr_0.8.1                 scater_1.12.1              
+##  [3] ggplot2_3.1.1               SingleCellExperiment_1.6.0 
+##  [5] SummarizedExperiment_1.14.0 DelayedArray_0.10.0        
+##  [7] BiocParallel_1.18.0         matrixStats_0.54.0         
+##  [9] Biobase_2.44.0              GenomicRanges_1.36.0       
+## [11] GenomeInfoDb_1.20.0         IRanges_2.18.0             
+## [13] S4Vectors_0.22.0            BiocGenerics_0.30.0        
+## [15] scMerge_1.0.0               rmarkdown_1.12             
+## 
+## loaded via a namespace (and not attached):
+##  [1] nlme_3.1-140             bitops_1.0-6            
+##  [3] RColorBrewer_1.1-2       numDeriv_2016.8-1       
+##  [5] tools_3.6.0              backports_1.1.4         
+##  [7] R6_2.4.0                 irlba_2.3.3             
+##  [9] rpart_4.1-15             KernSmooth_2.23-15      
+## [11] vipor_0.4.5              uwot_0.1.3              
+## [13] mgcv_1.8-28              Hmisc_4.2-0             
+## [15] lazyeval_0.2.2           colorspace_1.4-1        
+## [17] nnet_7.3-12              withr_2.1.2             
+## [19] tidyselect_0.2.5         gridExtra_2.3           
+## [21] compiler_3.6.0           BiocNeighbors_1.2.0     
+## [23] htmlTable_1.13.1         labeling_0.3            
+## [25] caTools_1.17.1.2         scales_1.0.0            
+## [27] checkmate_1.9.3          proxy_0.4-23            
+## [29] stringr_1.4.0            digest_0.6.19           
+## [31] foreign_0.8-71           XVector_0.24.0          
+## [33] base64enc_0.1-3          pkgconfig_2.0.2         
+## [35] htmltools_0.3.6          ruv_0.9.7               
+## [37] bbmle_1.0.20             htmlwidgets_1.3         
+## [39] rlang_0.3.4              rstudioapi_0.10         
+## [41] FNN_1.1.3                DelayedMatrixStats_1.6.0
+## [43] gtools_3.8.1             acepack_1.4.1           
+## [45] RCurl_1.95-4.12          magrittr_1.5            
+## [47] BiocSingular_1.0.0       GenomeInfoDbData_1.2.1  
+## [49] Formula_1.2-3            Matrix_1.2-17           
+## [51] Rcpp_1.0.1               ggbeeswarm_0.6.0        
+## [53] munsell_0.5.0            viridis_0.5.1           
+## [55] stringi_1.4.3            yaml_2.2.0              
+## [57] zlibbioc_1.30.0          Rtsne_0.15              
+## [59] gplots_3.0.1.1           plyr_1.8.4              
+## [61] grid_3.6.0               gdata_2.18.0            
+## [63] M3Drop_1.10.0            reldist_1.6-6           
+## [65] crayon_1.3.4             lattice_0.20-38         
+## [67] cowplot_0.9.4            splines_3.6.0           
+## [69] knitr_1.23               pillar_1.4.0            
+## [71] igraph_1.2.4.1           codetools_0.2-16        
+## [73] glue_1.3.1               packrat_0.5.0           
+## [75] evaluate_0.13            latticeExtra_0.6-28     
+## [77] RcppParallel_4.4.2       data.table_1.12.2       
+## [79] foreach_1.4.4            gtable_0.3.0            
+## [81] purrr_0.3.2              assertthat_0.2.1        
+## [83] xfun_0.7                 rsvd_1.0.0              
+## [85] RcppEigen_0.3.3.5.0      RSpectra_0.14-0         
+## [87] survival_2.44-1.1        viridisLite_0.3.0       
+## [89] tibble_2.1.1             iterators_1.0.10        
+## [91] beeswarm_0.2.3           cluster_2.0.9           
+## [93] statmod_1.4.30</code></pre>
+<pre class="r"><code>t2 - t1</code></pre>
+<pre><code>## Time difference of 1.112507 mins</code></pre>
 </div>
 
 

@@ -5,6 +5,10 @@ date: "03/05/2019"
 output: html_document
 ---
 
+```{r, echo = FALSE}
+t1 = Sys.time()
+```
+
 
 As discussed in 3rd May 2019, Kevin will work on this part of the workshop.
 
@@ -19,40 +23,99 @@ Here are some plots where the raw data is separated by the data-batches but not 
 
 scMerge corrects data-batch separations by 
 
-  1. identifying cells of identical cell types and pooling these together
-  2. identitying data-batch noises using Stably Expressed Genes (SEGs) and removing these from the data. 
-  
+1. identifying cells of identical cell types and pooling these together
+2. identitying data-batch noises using Stably Expressed Genes (SEGs) and removing these from the data. 
+
 Thus, scMerge can be thought of a two-step process!
 
-# scMerge is a two-step process (Change this once our data becomes available)
+# Supervised scMerge
 
-As mentioned above, scMerge is a two-step method. Let's run the built-in example of `scMerge` first to understand what it is doing. 
+We will begin with a liver dataset. The data are stored as four separate RDS files (this is similar to a `RData` file, but only one data can be stored in each RDS file). 
+
+
+
+
+| Name  | ID       | Author | DOI or URL                | Protocol   | Organism | Tissue | # of cell types | # of cells | # of batches |
+|-------|----------|--------|---------------------------|------------|----------|--------|-----------------|------------|--------------|
+| Liver | GSE87795 | Su     | 10.1186/s12864-017-4342-x | SMARTer/C1 | Mouse    | Liver  | 6               | 1236       |              |
+|       | GSE90047 | Yang   | 10.1002/hep.29353         | Smart-Seq2 |          |        | 2               |            |              |
+|       | GSE87038 | Dong   | 10.1186/s13059-018-1416-2 | STRT-seq   |          |        | 3               |            |              |
+|       | GSE96981 | Camp   | 10.1038/nature22796       | SMARTer/C1 |          |        | 3               |            |              |
+
 
 ```{r}
-library(scMerge)
-## Loading example data
-data('example_sce', package = 'scMerge')
-## Previously computed stably expressed genes
-data('segList_ensemblGeneID', package = 'scMerge')
-## Running an example data with minimal inputs
-sce_mESC <- scMerge(sce_combine = example_sce,
-                    ctl = segList_ensemblGeneID$mouse$mouse_scSEG,
-                    kmeansK = c(3, 3),
-                    assay_name = 'scMerge')
+su = readRDS("data/sce_GSE87795.rds")
+yang = readRDS("data/sce_GSE90047.rds")
+dong = readRDS("data/sce_GSE87038.rds")
+camp = readRDS("data/sce_GSE96981.rds")
+sce_list = list(su = su, yang = yang, dong = dong, camp = camp)
 
-scater::plotPCA(sce_mESC, colour_by = 'cellTypes', shape = 'batch',
-                 run_args = list(exprs_values = 'logcounts'))
-
-scater::plotPCA(sce_mESC, colour_by = 'cellTypes', shape = 'batch',
-                 run_args = list(exprs_values = 'scMerge'))
 ```
 
 
-This example shows the minimum inputs of the `scMerge` function. 
+```{r}
+library(scMerge)
+library(scater)
+library(dplyr)
 
 
-# Supervised scMerge
+purrr::map(sce_list, ~ colData(.x) %>% colnames)
+
+sce_combine = scMerge::sce_cbind(sce_list = sce_list, method = "union", colData_names = c("cellTypes", "stage"))
+sce_combine
+```
+
+
+
+```{r}
+data("segList_ensemblGeneID", package = "scMerge")
+
+sce_combine <- scMerge(sce_combine = sce_combine, 
+                       ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
+                       kmeansK = c(6,2,3,3),
+                       exprs = "logcounts",
+                       hvg_exprs = "counts",
+                       marker = NULL,
+                       ruvK = 20,
+                       cell_type = NULL,
+                       dist = "cor",
+                       replicate_prop = 1,
+                       WV = sce_combine$stage,
+                       # WV_marker = c("Afp","Alb","Epcam"),
+                       WV_marker = c("ENSMUSG00000045394","ENSMUSG00000054932","ENSMUSG00000045394"),
+                       return_all_RUV = FALSE,
+                       assay_name = "scMerge_scSEG",
+                       verbose = TRUE,
+                       fast_svd = FALSE)
+```
+
+
+
+```{r}
+scater::plotTSNE(sce_combine, 
+                colour_by = 'cellTypes', shape = 'batch',
+                run_args = list(exprs_values = 'logcounts'))
+
+scater::plotTSNE(sce_combine, 
+                colour_by = 'cellTypes', shape = 'batch',
+                run_args = list(exprs_values = 'scMerge_scSEG'))
+```
+
 
 # Unsupervised scMerge
 
 # Extension: semi-supervised scMerge
+
+
+```{r, echo = FALSE}
+t2 = Sys.time()
+```
+
+
+
+# Session Info
+```{r}
+sessionInfo()
+t2 - t1
+```
+
