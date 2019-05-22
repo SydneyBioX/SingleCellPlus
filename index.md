@@ -33,7 +33,8 @@ Ideally, you should be somewhat familiar with `R`. However, if you haven't used 
 
 # Installation 
 
-```{r, eval = FALSE}
+
+```r
 install.packages("BiocManager")
 
 BiocManager::install(c("scMerge", "plotly", "scater", "monocle", "Rtsne", "DropletUtils"))

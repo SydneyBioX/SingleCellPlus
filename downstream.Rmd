@@ -8,3 +8,48 @@ output: html_document
 As discussed in 3rd May 2019, Kevin will work on this part of the workshop. 
 
 Kevin can only work on this if he is instructed by Jean/Kitty/Pengyi what downstream analysis (even if it is DE, I need to know what comparisons) to show. If Yingxin has already worked on this, then some code should be posted here. 
+
+
+```{r, echo = FALSE}
+sce_scMerge = readRDS(file = "data/liver_scMerge.RDS")
+```
+
+
+
+
+```{r}
+library(monocle)
+library(SingleCellExperiment)
+library(dplyr)
+
+rowData(sce_scMerge) = DataFrame(ensemblGeneID = rownames(sce_scMerge))
+expressed_genes = rowMeans(SingleCellExperiment::counts(sce_scMerge) == 0)
+hist(expressed_genes)
+
+
+sce_scMerge_monocle = scran::convertTo(
+  sce_scMerge, 
+  type = "monocle", 
+  assay.type = "logcounts", 
+  col.fields = c("cellTypes", "stage", "batch")) %>% 
+  estimateSizeFactors()
+
+
+
+
+diff_test_res <- differentialGeneTest(
+  sce_scMerge_monocle[expressed_genes < 0.1], fullModelFormulaStr = "~stage+cellTypes")
+ordering_genes <- row.names(subset(diff_test_res, qval < 0.01))
+
+sce_scMerge_monocle <- setOrderingFilter(sce_scMerge_monocle, ordering_genes)
+
+sce_scMerge_monocle = estimateDispersions(sce_scMerge_monocle)
+plot_ordering_genes(sce_scMerge_monocle)
+sce_scMerge_monocle <- reduceDimension(sce_scMerge_monocle, max_components = 2,
+                                       method = 'DDRTree')
+
+sce_scMerge_monocle <- orderCells(sce_scMerge_monocle)
+
+plot_cell_trajectory(sce_scMerge_monocle, color_by = "stage")
+```
+

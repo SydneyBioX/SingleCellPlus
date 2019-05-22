@@ -2,10 +2,90 @@
 title: "QC of single cell data"
 author: "Sydney Precision Bioinformatics Group"
 date: "03/05/2019"
-output: html_document
+output:
+  html_document:
+    code_folding: hide
+    number_sections: yes
+    toc: yes
+    fig_height: 8
+    fig_width: 8
+    toc_float:
+      collapsed: true
+      smooth_scroll: false
 ---
 
 
 As discussed in 3rd May 2019, Yue Cao and Hani Kim will be jointly working on this part of the workshop. 
 
 However, the raw data will be prepared by Yingxin. 
+
+#Load in packages 
+```{r}
+library(DropletUtils) #Droplet Utils is needed to plot the waterfall plot
+```
+
+
+#Read in data
+
+```{r}
+
+data <- read.csv("data/GSE87795_counts.csv")
+head(data)
+
+names_data <- data[,1]
+rownames(data) <- names_data
+data <- data[, -1]
+
+```
+
+
+#QC1: Waterfall Plot
+
+```{r}
+
+br.out <- barcodeRanks(data)
+plot(br.out$rank, br.out$total, log="xy", xlab="Rank", ylab="Total", col="royalblue")
+o <- order(br.out$rank)
+lines(br.out$rank[o], br.out$fitted[o], col="red")
+abline(h=br.out$knee, col="dodgerblue", lty=2)
+abline(h=br.out$inflection, col="forestgreen", lty=2)
+legend("bottomleft", lty=2, col=c("dodgerblue", "forestgreen"),
+        legend=c("knee", "inflection"))
+```
+
+
+#QC2: Library size
+
+```{r}
+options(scipen=999)
+par(mfrow=c(1,2))
+hist(colSums(data[, grepl("E11.5",colnames(data))])/1e3, breaks = 20, main = "E11.5", ylab = "number of cells", xlab = "library size (thousands)", col="gray")
+hist(colSums(data[, grepl("E13.5",colnames(data))])/1e3, breaks = 20, main = "E13.5", ylab = "number of cells", xlab = "library size (thousands)", col="gray")
+
+```
+
+#QC3: Number of uniquely expressed genes
+
+
+```{r}
+
+par(mfrow=c(1,2))
+hist(colSums(data[, grepl("E11.5",colnames(data))]!=0), breaks = 20, main = "E11.5", ylab = "number of cells", xlab = "number of expressed genes", col="gray")
+hist(colSums(data[, grepl("E13.5",colnames(data))]!=0), breaks = 20, main = "E13.5", ylab = "number of cells", xlab = "number of expressed genes", col="gray")
+
+```
+
+
+
+
+# QC5: Contribution by top 50 expressed genes
+```{r}
+
+```
+
+
+# QC6: Mitochondrial gene expression
+```{r}
+
+```
+

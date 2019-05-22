@@ -321,6 +321,639 @@ $(document).ready(function () {
 
 <p>As discussed in 3rd May 2019, Kevin will work on this part of the workshop.</p>
 <p>Kevin can only work on this if he is instructed by Jean/Kitty/Pengyi what downstream analysis (even if it is DE, I need to know what comparisons) to show. If Yingxin has already worked on this, then some code should be posted here.</p>
+<pre class="r"><code>library(monocle)</code></pre>
+<pre><code>## Loading required package: Matrix</code></pre>
+<pre><code>## Loading required package: Biobase</code></pre>
+<pre><code>## Loading required package: BiocGenerics</code></pre>
+<pre><code>## Loading required package: parallel</code></pre>
+<pre><code>## 
+## Attaching package: &#39;BiocGenerics&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:parallel&#39;:
+## 
+##     clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+##     clusterExport, clusterMap, parApply, parCapply, parLapply,
+##     parLapplyLB, parRapply, parSapply, parSapplyLB</code></pre>
+<pre><code>## The following object is masked from &#39;package:Matrix&#39;:
+## 
+##     which</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     IQR, mad, sd, var, xtabs</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     anyDuplicated, append, as.data.frame, basename, cbind,
+##     colnames, dirname, do.call, duplicated, eval, evalq, Filter,
+##     Find, get, grep, grepl, intersect, is.unsorted, lapply, Map,
+##     mapply, match, mget, order, paste, pmax, pmax.int, pmin,
+##     pmin.int, Position, rank, rbind, Reduce, rownames, sapply,
+##     setdiff, sort, table, tapply, union, unique, unsplit, which,
+##     which.max, which.min</code></pre>
+<pre><code>## Welcome to Bioconductor
+## 
+##     Vignettes contain introductory material; view with
+##     &#39;browseVignettes()&#39;. To cite Bioconductor, see
+##     &#39;citation(&quot;Biobase&quot;)&#39;, and for packages &#39;citation(&quot;pkgname&quot;)&#39;.</code></pre>
+<pre><code>## Loading required package: ggplot2</code></pre>
+<pre><code>## Registered S3 methods overwritten by &#39;ggplot2&#39;:
+##   method         from 
+##   [.quosures     rlang
+##   c.quosures     rlang
+##   print.quosures rlang</code></pre>
+<pre><code>## Loading required package: VGAM</code></pre>
+<pre><code>## Loading required package: stats4</code></pre>
+<pre><code>## Loading required package: splines</code></pre>
+<pre><code>## Loading required package: DDRTree</code></pre>
+<pre><code>## Loading required package: irlba</code></pre>
+<pre class="r"><code>library(SingleCellExperiment)</code></pre>
+<pre><code>## Loading required package: SummarizedExperiment</code></pre>
+<pre><code>## Loading required package: GenomicRanges</code></pre>
+<pre><code>## Loading required package: S4Vectors</code></pre>
+<pre><code>## 
+## Attaching package: &#39;S4Vectors&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:Matrix&#39;:
+## 
+##     expand</code></pre>
+<pre><code>## The following object is masked from &#39;package:base&#39;:
+## 
+##     expand.grid</code></pre>
+<pre><code>## Loading required package: IRanges</code></pre>
+<pre><code>## Loading required package: GenomeInfoDb</code></pre>
+<pre><code>## Loading required package: DelayedArray</code></pre>
+<pre><code>## Loading required package: matrixStats</code></pre>
+<pre><code>## 
+## Attaching package: &#39;matrixStats&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:Biobase&#39;:
+## 
+##     anyMissing, rowMedians</code></pre>
+<pre><code>## Loading required package: BiocParallel</code></pre>
+<pre><code>## 
+## Attaching package: &#39;DelayedArray&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:matrixStats&#39;:
+## 
+##     colMaxs, colMins, colRanges, rowMaxs, rowMins, rowRanges</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     aperm, apply, rowsum</code></pre>
+<pre class="r"><code>library(dplyr)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:matrixStats&#39;:
+## 
+##     count</code></pre>
+<pre><code>## The following objects are masked from &#39;package:GenomicRanges&#39;:
+## 
+##     intersect, setdiff, union</code></pre>
+<pre><code>## The following object is masked from &#39;package:GenomeInfoDb&#39;:
+## 
+##     intersect</code></pre>
+<pre><code>## The following objects are masked from &#39;package:IRanges&#39;:
+## 
+##     collapse, desc, intersect, setdiff, slice, union</code></pre>
+<pre><code>## The following objects are masked from &#39;package:S4Vectors&#39;:
+## 
+##     first, intersect, rename, setdiff, setequal, union</code></pre>
+<pre><code>## The following object is masked from &#39;package:Biobase&#39;:
+## 
+##     combine</code></pre>
+<pre><code>## The following objects are masked from &#39;package:BiocGenerics&#39;:
+## 
+##     combine, intersect, setdiff, union</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>rowData(sce_scMerge) = DataFrame(ensemblGeneID = rownames(sce_scMerge))
+expressed_genes = rowMeans(SingleCellExperiment::counts(sce_scMerge) == 0)
+hist(expressed_genes)</code></pre>
+<p><img src="downstream_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code>sce_scMerge_monocle = scran::convertTo(
+  sce_scMerge, 
+  type = &quot;monocle&quot;, 
+  assay.type = &quot;logcounts&quot;, 
+  col.fields = c(&quot;cellTypes&quot;, &quot;stage&quot;, &quot;batch&quot;)) %&gt;% 
+  estimateSizeFactors()</code></pre>
+<pre><code>## Warning in monocle::newCellDataSet(cur.exprs, phenoData = pd, featureData
+## = fd, : Warning: featureData must contain a column verbatim named
+## &#39;gene_short_name&#39; for certain functions
+
+## Warning in monocle::newCellDataSet(cur.exprs, phenoData = pd, featureData
+## = fd, : Warning: featureData must contain a column verbatim named
+## &#39;gene_short_name&#39; for certain functions
+
+## Warning in monocle::newCellDataSet(cur.exprs, phenoData = pd, featureData
+## = fd, : Warning: featureData must contain a column verbatim named
+## &#39;gene_short_name&#39; for certain functions</code></pre>
+<pre class="r"><code>diff_test_res &lt;- differentialGeneTest(
+  sce_scMerge_monocle[expressed_genes &lt; 0.1], fullModelFormulaStr = &quot;~stage+cellTypes&quot;)
+ordering_genes &lt;- row.names(subset(diff_test_res, qval &lt; 0.01))
+
+sce_scMerge_monocle &lt;- setOrderingFilter(sce_scMerge_monocle, ordering_genes)
+
+sce_scMerge_monocle = estimateDispersions(sce_scMerge_monocle)</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: glm.fit: algorithm did not converge</code></pre>
+<pre><code>## Warning: glm.fit: algorithm stopped at boundary value</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: glm.fit: algorithm did not converge</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: glm.fit: algorithm did not converge</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning: glm.fit: algorithm did not converge</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning: glm.fit: algorithm did not converge</code></pre>
+<pre><code>## Warning: glm.fit: algorithm stopped at boundary value</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: glm.fit: algorithm did not converge</code></pre>
+<pre><code>## Warning: glm.fit: algorithm stopped at boundary value</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: glm.fit: algorithm did not converge</code></pre>
+<pre><code>## Warning: glm.fit: algorithm stopped at boundary value</code></pre>
+<pre><code>## Removing 582 outliers</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: glm.fit: algorithm did not converge</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: glm.fit: algorithm did not converge</code></pre>
+<pre><code>## Warning: glm.fit: algorithm stopped at boundary value</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced
+
+## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: step size truncated due to divergence</code></pre>
+<pre><code>## Warning in log(ifelse(y == 0, 1, y/mu)): NaNs produced</code></pre>
+<pre><code>## Warning: glm.fit: algorithm did not converge</code></pre>
+<pre><code>## Warning: glm.fit: algorithm stopped at boundary value</code></pre>
+<pre class="r"><code>plot_ordering_genes(sce_scMerge_monocle)</code></pre>
+<pre><code>## Warning: Transformation introduced infinite values in continuous y-axis</code></pre>
+<pre><code>## Warning: Transformation introduced infinite values in continuous y-axis</code></pre>
+<p><img src="downstream_files/figure-html/unnamed-chunk-2-2.png" width="672" /></p>
+<pre class="r"><code>sce_scMerge_monocle &lt;- reduceDimension(sce_scMerge_monocle, max_components = 2,
+                                       method = &#39;DDRTree&#39;)
+
+sce_scMerge_monocle &lt;- orderCells(sce_scMerge_monocle)
+
+plot_cell_trajectory(sce_scMerge_monocle, color_by = &quot;stage&quot;)</code></pre>
+<p><img src="downstream_files/figure-html/unnamed-chunk-2-3.png" width="672" /></p>
 
 
 
