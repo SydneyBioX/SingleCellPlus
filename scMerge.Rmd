@@ -37,10 +37,10 @@ We will begin with a liver dataset. The data are stored as four separate RDS fil
 
 | Name  | ID       | Author | DOI or URL                | Protocol   | Organism | Tissue | # of cell types | # of cells | # of batches |
 |-------|----------|--------|---------------------------|------------|----------|--------|-----------------|------------|--------------|
-| Liver | GSE87795 | Su     | 10.1186/s12864-017-4342-x | SMARTer/C1 | Mouse    | Liver  | 6               | 1236       |              |
-|       | GSE90047 | Yang   | 10.1002/hep.29353         | Smart-Seq2 |          |        | 2               |            |              |
-|       | GSE87038 | Dong   | 10.1186/s13059-018-1416-2 | STRT-seq   |          |        | 3               |            |              |
-|       | GSE96981 | Camp   | 10.1038/nature22796       | SMARTer/C1 |          |        | 3               |            |              |
+| Liver | GSE87795 | Su     | 10.1186/s12864-017-4342-x | SMARTer/C1 | Mouse    | Liver  | 6               | 1236       | 6            |
+|       | GSE90047 | Yang   | 10.1002/hep.29353         | Smart-Seq2 |          |        | 2               |            | 2            |
+|       | GSE87038 | Dong   | 10.1186/s13059-018-1416-2 | STRT-seq   |          |        | 4               |            | 3            |
+|       | GSE96981 | Camp   | 10.1038/nature22796       | SMARTer/C1 |          |        | 3               |            | 3            |
 
 
 ```{r}
@@ -49,7 +49,6 @@ yang = readRDS("data/sce_GSE90047.rds")
 dong = readRDS("data/sce_GSE87038.rds")
 camp = readRDS("data/sce_GSE96981.rds")
 sce_list = list(su = su, yang = yang, dong = dong, camp = camp)
-
 ```
 
 
@@ -57,6 +56,8 @@ sce_list = list(su = su, yang = yang, dong = dong, camp = camp)
 library(scMerge)
 library(scater)
 library(dplyr)
+library(gridExtra)
+library(plotly)
 
 
 purrr::map(sce_list, ~ colData(.x) %>% colnames)
@@ -66,45 +67,158 @@ sce_combine
 ```
 
 
+```{r, fig.width=12, fig.height=6}
+plot_sce_cellTypes_batch = function(sce, exprs_values){
+  set.seed(1124)
+  sce_tsne = scater::runTSNE(object = sce, exprs_values = exprs_values)
+  sce_tsne_cellTypes = scater::plotTSNE(sce_tsne, colour_by = 'cellTypes') +
+    labs(title = "TSNE, coloured by cell types")
+  
+  sce_tsne_batch = scater::plotTSNE(sce_tsne, colour_by = 'batch') +
+    labs(title = "TSNE, coloured by batches") +
+    scale_fill_brewer(palette = "Dark2")
+  
+  # gridExtra::grid.arrange(sce_tsne_cellTypes, sce_tsne_batch, nrow = 1)
+  
+  sce_tsne_cellTypes2 = plotly::ggplotly(sce_tsne_cellTypes)
+  sce_tsne_batch2 = plotly::ggplotly(sce_tsne_batch)
+  
+  plotly::subplot(sce_tsne_cellTypes2, sce_tsne_batch2)
+}
+```
+
+
+```{r}
+table(sce_combine$cellTypes, sce_combine$batch)
+
+table(sce_combine$cellTypes, sce_combine$stage)
+
+table(sce_combine$batch, sce_combine$stage)
+
+plot_sce_cellTypes_batch(sce = sce_combine, exprs_values = "logcounts")
+```
+
 
 ```{r}
 data("segList_ensemblGeneID", package = "scMerge")
 
-sce_combine <- scMerge(sce_combine = sce_combine, 
-                       ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
-                       kmeansK = c(6,2,3,3),
-                       exprs = "logcounts",
-                       hvg_exprs = "counts",
-                       marker = NULL,
-                       ruvK = 20,
-                       cell_type = NULL,
-                       dist = "cor",
-                       replicate_prop = 1,
-                       WV = sce_combine$stage,
-                       # WV_marker = c("Afp","Alb","Epcam"),
-                       WV_marker = c("ENSMUSG00000045394","ENSMUSG00000054932","ENSMUSG00000045394"),
-                       return_all_RUV = FALSE,
-                       assay_name = "scMerge_scSEG",
-                       verbose = TRUE,
-                       fast_svd = FALSE)
+sce_scMerge <- scMerge(
+  sce_combine = sce_combine,
+  ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
+  # kmeansK = c(6,2,3,3),
+  # exprs = "logcounts",
+  # hvg_exprs = "counts",
+  # marker = NULL,
+  # ruvK = 20,
+  cell_type = sce_combine$cellTypes,
+  # dist = "cor",
+  replicate_prop = 1,
+  # WV = sce_combine$stage,
+  # WV_marker = c("Afp","Alb","Epcam"),
+  # WV_marker = c("ENSMUSG00000045394","ENSMUSG00000054932","ENSMUSG00000045394"),
+  # return_all_RUV = FALSE,
+  assay_name = "scMerge_supervised",
+  verbose = TRUE,
+  fast_svd = FALSE)
 ```
-
-
 
 ```{r}
-scater::plotTSNE(sce_combine, 
-                colour_by = 'cellTypes', shape = 'batch',
-                run_args = list(exprs_values = 'logcounts'))
+sce_scMerge
 
-scater::plotTSNE(sce_combine, 
-                colour_by = 'cellTypes', shape = 'batch',
-                run_args = list(exprs_values = 'scMerge_scSEG'))
+plot_sce_cellTypes_batch(sce = sce_scMerge, exprs_values = "scMerge_supervised")
 ```
+
 
 
 # Unsupervised scMerge
 
-# Extension: semi-supervised scMerge
+This is not working at the moment.
+
+```{r, eval = FALSE}
+sce_scMerge2 <- scMerge(
+  sce_combine = sce_combine,
+  ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
+  kmeansK = c(6,2,3,3),
+  # exprs = "logcounts",
+  # hvg_exprs = "counts",
+  # marker = NULL,
+  # ruvK = 20,
+  # cell_type = sce_combine$cellTypes,
+  # dist = "cor",
+  replicate_prop = 1,
+  # WV = sce_combine$stage,
+  # WV_marker = c("Afp","Alb","Epcam"),
+  # WV_marker = c("ENSMUSG00000045394","ENSMUSG00000054932","ENSMUSG00000045394"),
+  # return_all_RUV = FALSE,
+  assay_name = "scMerge_unsupervised",
+  verbose = TRUE,
+  fast_svd = FALSE)
+```
+
+
+```{r, eval = FALSE}
+plot_sce_cellTypes_batch(sce = sce_scMerge2, exprs_values = "scMerge_unsupervised")
+```
+
+
+# Semi-supervised scMerge
+
+```{r}
+sce_scMerge3 <- scMerge(
+  sce_combine = sce_combine,
+  ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
+  kmeansK = c(6,2,3,3),
+  # exprs = "logcounts",
+  # hvg_exprs = "counts",
+  # marker = NULL,
+  # ruvK = 20,
+  # cell_type = sce_combine$cellTypes,
+  # dist = "cor",
+  replicate_prop = 1,
+  WV = sce_combine$stage,
+  # WV_marker = c("Afp","Alb","Epcam"),
+  WV_marker = c("ENSMUSG00000045394","ENSMUSG00000054932","ENSMUSG00000045394"),
+  # return_all_RUV = FALSE,
+  assay_name = "scMerge_semisupervised",
+  verbose = TRUE,
+  fast_svd = FALSE)
+```
+
+
+```{r}
+plot_sce_cellTypes_batch(sce = sce_scMerge3, exprs_values = "scMerge_semisupervised")
+```
+
+
+
+# Extension: Speeding up the calculations
+
+
+```{r, eval = FALSE}
+system.time(
+  sce_fast <- scMerge(
+    sce_combine = sce_combine,
+    ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
+    kmeansK = c(6,2,3,3),
+    # exprs = "logcounts",
+    # hvg_exprs = "counts",
+    # marker = NULL,
+    # ruvK = 20,
+    # cell_type = sce_combine$cellTypes,
+    # dist = "cor",
+    replicate_prop = 1,
+    WV = sce_combine$stage,
+    # WV_marker = c("Afp","Alb","Epcam"),
+    WV_marker = c("ENSMUSG00000045394","ENSMUSG00000054932","ENSMUSG00000045394"),
+    # return_all_RUV = FALSE,
+    assay_name = "scMerge_fast",
+    verbose = TRUE,
+    fast_svd = TRUE, rsvd_prop = 0.1)
+)
+```
+
+
+# Session Info
 
 
 ```{r, echo = FALSE}
@@ -113,7 +227,6 @@ t2 = Sys.time()
 
 
 
-# Session Info
 ```{r}
 sessionInfo()
 t2 - t1
