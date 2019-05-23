@@ -11,16 +11,26 @@ Kevin can only work on this if he is instructed by Jean/Kitty/Pengyi what downst
 
 
 ```{r, echo = FALSE}
+library(SingleCellExperiment)
+library(dplyr)
 sce_scMerge = readRDS(file = "data/liver_scMerge.RDS")
 ```
 
+# SC3
+```{r, eval = FALSE}
+library(SC3)
+rowData(sce_scMerge)$feature_symbol = rownames(sce_scMerge)
+table(sce_scMerge$cellTypes) %>% length
+sce_clust <- sc3(sce_scMerge, ks = 8, biology = TRUE, n_cores = 4)
+
+sc3_interactive(sce_clust)
+```
 
 
+# monocle
 
-```{r}
+```{r, eval = FALSE}
 library(monocle)
-library(SingleCellExperiment)
-library(dplyr)
 
 rowData(sce_scMerge) = DataFrame(ensemblGeneID = rownames(sce_scMerge))
 expressed_genes = rowMeans(SingleCellExperiment::counts(sce_scMerge) == 0)
@@ -28,10 +38,10 @@ hist(expressed_genes)
 
 
 sce_scMerge_monocle = scran::convertTo(
-  sce_scMerge, 
-  type = "monocle", 
-  assay.type = "logcounts", 
-  col.fields = c("cellTypes", "stage", "batch")) %>% 
+  sce_scMerge,
+  type = "monocle",
+  assay.type = "logcounts",
+  col.fields = c("cellTypes", "stage", "batch")) %>%
   estimateSizeFactors()
 
 
@@ -53,3 +63,24 @@ sce_scMerge_monocle <- orderCells(sce_scMerge_monocle)
 plot_cell_trajectory(sce_scMerge_monocle, color_by = "stage")
 ```
 
+
+
+
+# t-test
+```{r}
+library(genefilter)
+table(sce_scMerge$cellTypes)
+sce_scMerge_Mcell = sce_scMerge[,sce_scMerge$cellTypes == "Hepatoblast"]
+
+logcounts_Mcell = logcounts(sce_scMerge_Mcell)
+
+scMerge_Mcell = assay(sce_scMerge_Mcell, "scMerge_supervised")
+
+logcounts_Mcell_batch_ttest = rowFtests(logcounts_Mcell, 
+                                        fac = factor(sce_scMerge_Mcell$batch))
+scMerge_Mcell_batch_ttest = rowFtests(scMerge_Mcell, 
+                                      fac = factor(sce_scMerge_Mcell$batch))
+
+hist(logcounts_Mcell_batch_ttest$p.value)
+hist(scMerge_Mcell_batch_ttest$p.value)
+```
