@@ -5,7 +5,8 @@ date: "03/05/2019"
 output: html_document
 ---
 
-As discussed in 3rd May 2019, Kevin will work on this part of the workshop. 
+
+As discussed in 3rd May 2019, Taiyun will work on the `scClust` component and Yingxin will work on the `monocle` component.  
 
 Kevin can only work on this if he is instructed by Jean/Kitty/Pengyi what downstream analysis (even if it is DE, I need to know what comparisons) to show. If Yingxin has already worked on this, then some code should be posted here. 
 

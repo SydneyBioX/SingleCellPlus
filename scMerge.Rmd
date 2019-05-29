@@ -5,6 +5,15 @@ date: "03/05/2019"
 output: html_document
 ---
 
+# Jean's comments
+  
+  1. `str` and `fct` manipulations as blackbox. 
+  1. Change "batch" into "data sources"/"datasets"
+  1. Separate plotly plots into two
+  1. Only keep Su and Yang. 
+  1. Dropping E10.5 and E16.5
+  
+
 ```{r, echo = FALSE}
 t1 = Sys.time()
 ```
@@ -71,6 +80,10 @@ library(forcats)
 sce_combine = scMerge::sce_cbind(sce_list = sce_list, 
                                  method = "union", 
                                  colData_names = c("cellTypes", "stage"))
+
+
+cat("Please copy and paste this")
+
 sce_combine = sce_combine[,stringr::str_detect(sce_combine$cellTypes, "cholangiocyte|Epithelial Cell|hepatoblast|Hepatoblast|Mesenchymal Cell|Endothelial Cell|Hematopoietic|Immune cell|Stellate Cell")]
 
 colData(sce_combine)$cellTypes = forcats::fct_recode(
@@ -79,8 +92,8 @@ colData(sce_combine)$cellTypes = forcats::fct_recode(
   Hepatoblast = "Hepatoblasts") %>% 
   droplevels()
 
-sce_combine = sce_combine[rowSums(SingleCellExperiment::counts(sce_combine)) != 0, 
-                          colSums(SingleCellExperiment::counts(sce_combine)) != 0]
+# sce_combine = sce_combine[rowSums(SingleCellExperiment::counts(sce_combine)) != 0, 
+#                           colSums(SingleCellExperiment::counts(sce_combine)) != 0]
 ```
 
 
@@ -91,41 +104,50 @@ library(dplyr)
 plot_sce_cellTypes_batch = function(sce, exprs_values){
   set.seed(1234)
   sce_tsne = scater::runTSNE(object = sce, exprs_values = exprs_values)
-  tsne_mat = sce_tsne@reducedDims@listData$TSNE
-  colnames(tsne_mat) = c("tsne1", "tsne2")
-  tsne_df = bind_cols(data.frame(tsne_mat), as.data.frame(colData(sce_tsne)))
-  
-  p1 = plotly::plot_ly(data = tsne_df, x = ~tsne1, y = ~tsne2,
-                       type = "scatter",
-                       mode = "markers",
-                       color = ~cellTypes, 
-                       colors = "Set1")
-  
-  p2 = plotly::plot_ly(data = tsne_df, x = ~tsne1, y = ~tsne2,
-                       type = "scatter",
-                       mode = "markers",
-                       color = ~batch, 
-                       colors = "Dark2")
-  
-  plotly::subplot(p1, p2, shareY = TRUE, shareX = TRUE)
-  
-  # sce_tsne_cellTypes = scater::plotTSNE(sce_tsne, colour_by = 'cellTypes') +
-  #   labs(title = "TSNE, coloured by cell types")
+  # tsne_mat = sce_tsne@reducedDims@listData$TSNE
+  # colnames(tsne_mat) = c("tsne1", "tsne2")
+  # tsne_df = bind_cols(data.frame(tsne_mat), as.data.frame(colData(sce_tsne)))
   # 
-  # sce_tsne_batch = scater::plotTSNE(sce_tsne, colour_by = 'batch') +
-  #   labs(title = "TSNE, coloured by batches")
-  
-  # gridExtra::grid.arrange(sce_tsne_cellTypes, sce_tsne_batch, nrow = 1)
-  
-  # sce_tsne_cellTypes2 = plotly::ggplotly(sce_tsne_cellTypes)
-  # sce_tsne_batch2 = plotly::ggplotly(sce_tsne_batch)
+  # p1 = plotly::plot_ly(data = tsne_df, x = ~tsne1, y = ~tsne2,
+  #                      type = "scatter",
+  #                      mode = "markers",
+  #                      color = ~cellTypes, 
+  #                      colors = "Set1")
   # 
-  # plotly::subplot(sce_tsne_cellTypes2, sce_tsne_batch2)
+  # p2 = plotly::plot_ly(data = tsne_df, x = ~tsne1, y = ~tsne2,
+  #                      type = "scatter",
+  #                      mode = "markers",
+  #                      color = ~batch, 
+  #                      colors = "Dark2")
+  # 
+  # plotly::subplot(p1, p2, shareY = TRUE, shareX = TRUE)
+  
+  sce_tsne_cellTypes = scater::plotTSNE(sce_tsne, colour_by = 'cellTypes') +
+    labs(title = "TSNE, coloured by cell types")
+
+  sce_tsne_batch = scater::plotTSNE(sce_tsne, colour_by = 'batch') +
+    labs(title = "TSNE, coloured by batches")
+  
+  gridExtra::grid.arrange(sce_tsne_cellTypes, sce_tsne_batch, nrow = 1)
+  
+  sce_tsne_cellTypes2 = plotly::ggplotly(sce_tsne_cellTypes)
+  sce_tsne_batch2 = plotly::ggplotly(sce_tsne_batch)
+
+  plotly::subplot(sce_tsne_cellTypes2, sce_tsne_batch2)
 }
 ```
 
 
 ```{r}
+table(sce_combine$cellTypes, sce_combine$batch, sce_combine$stage)
+
+library(janitor)
+
+janitor::tabyl(
+  colData(sce_combine) %>% as.data.frame(),
+  cellTypes, batch, stage)
+
+
 table(sce_combine$cellTypes, sce_combine$batch)
 
 table(sce_combine$cellTypes, sce_combine$stage)
