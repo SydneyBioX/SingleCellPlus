@@ -14,22 +14,17 @@ output:
 ---
 
 # Jean's comments
-  
-  1. `str` and `fct` manipulations as blackbox. 
-  1. Change "batch" into "data sources"/"datasets"
-  1. Separate plotly plots into two
-  1. Only keep Su and Yang. 
-  1. Dropping E10.5 and E16.5
-  
+
+1. `str` and `fct` manipulations as blackbox. 
+1. Change "batch" into "data sources"/"datasets"
+1. Separate plotly plots into two
+1. Only keep Su and Yang. 
+1. Dropping E10.5 and E16.5
+
 
 ```{r, echo = FALSE}
 t1 = Sys.time()
 ```
-
-
-As discussed in 3rd May 2019, Kevin will work on this part of the workshop.
-
-However, the raw data will be prepared by Yingxin and QC of the data are yet to be done. 
 
 # Introduction 
 
@@ -70,7 +65,7 @@ sce_list = list(
   yang = yang
   # dong = dong, 
   # camp = camp
-  )
+)
 ```
 
 
@@ -85,9 +80,6 @@ library(forcats)
 
 library(tibble)
 library(dplyr)
-library(ggiraph)
-library(patchwork)
-library(cowplot)
 
 
 # purrr::map(sce_list, ~ colData(.x) %>% colnames)
@@ -105,7 +97,7 @@ colData(sce_combine)$cellTypes = forcats::fct_recode(
   colData(sce_combine)$cellTypes, 
   Hepatoblast = "hepatoblast/hepatocyte"
   # Hepatoblast = "Hepatoblasts"
-  ) %>% 
+) %>% 
   droplevels()
 
 sce_combine = sce_combine[rowSums(SingleCellExperiment::counts(sce_combine)) != 0,
@@ -113,96 +105,28 @@ sce_combine = sce_combine[rowSums(SingleCellExperiment::counts(sce_combine)) != 
 ```
 
 
+
 ```{r, fig.width=12, fig.height=6, message=FALSE}
-
-
-plot_sce_cellTypes_batch = function(sce, exprs_values){
-  set.seed(1234)
-  sce_tsne = scater::runTSNE(object = sce, exprs_values = exprs_values)
-  tsne_mat = sce_tsne@reducedDims@listData$TSNE
-  colnames(tsne_mat) = c("tsne1", "tsne2")
-  tsne_df = bind_cols(data.frame(tsne_mat), as.data.frame(colData(sce_tsne))) %>% 
-    tibble::rowid_to_column("cellNumber")
-  
-  ########### Using plotly ################
-  # 
-  # p1 = plotly::plot_ly(data = tsne_df, x = ~tsne1, y = ~tsne2,
-  #                      type = "scatter",
-  #                      mode = "markers",
-  #                      color = ~cellTypes,
-  #                      colors = "Set1")
-  # 
-  # p2 = plotly::plot_ly(data = tsne_df, x = ~tsne1, y = ~tsne2,
-  #                      type = "scatter",
-  #                      mode = "markers",
-  #                      color = ~batch,
-  #                      colors = "Dark2") 
-  # 
-  # plotly::subplot(p1, p2, titleX = T, titleY = T)
-  
-  ########### Using scater::plotTSNE ################
-  
-  # sce_tsne_cellTypes = scater::plotTSNE(sce_tsne, colour_by = 'cellTypes') +
-  #   labs(title = "TSNE, coloured by cell types")
-  # 
-  # sce_tsne_batch = scater::plotTSNE(sce_tsne, colour_by = 'batch') +
-  #   labs(title = "TSNE, coloured by batches")
-  # 
-  # gridExtra::grid.arrange(sce_tsne_cellTypes, sce_tsne_batch, nrow = 1)
-  # 
-  # sce_tsne_cellTypes2 = plotly::ggplotly(sce_tsne_cellTypes) %>% 
-  #   plotly::layout(title = "")
-  # sce_tsne_batch2 = plotly::ggplotly(sce_tsne_batch) %>% 
-  #   plotly::layout(title = "")
-  # 
-  # plotly::subplot(sce_tsne_cellTypes2, 
-  #                 sce_tsne_batch2)
-  
-  ########### Using ggiraph::geom_point_interactive ################
-  
-  sce_tsne_cellTypes = tsne_df %>% 
-    ggplot(aes(x = tsne1, y = tsne2, 
-               colour = cellTypes,
-               tooltip = cellTypes,
-               data_id = cellNumber)) +
-    scale_colour_brewer(palette = "Set1") +
-    ggiraph::geom_point_interactive() + 
-    labs(title = paste0(exprs_values, ", coloured by cell types"))
-  
-  sce_tsne_batch = tsne_df %>% 
-    ggplot(aes(x = tsne1, y = tsne2, 
-               colour = batch,
-               tooltip = batch,
-               data_id = cellNumber)) +
-    scale_colour_brewer(palette = "Dark2") +
-    ggiraph::geom_point_interactive() +
-    labs(title = paste0(exprs_values, ", coloured by batch"))
-
-  
-  ggiraph::girafe(code = print(sce_tsne_cellTypes + sce_tsne_batch),
-                  width_svg = 12, height_svg = 6)
-}
-```
-
-
-```{r}
 table(sce_combine$cellTypes, sce_combine$batch)
 
 table(sce_combine$cellTypes, sce_combine$stage)
 
 table(sce_combine$batch, sce_combine$stage)
 
-scater::plotPCA(sce_combine, 
-                colour_by = "cellTypes",
-                run_args = list(exprs_values = "logcounts"))
+pca_logcounts_cellTypes = scater::plotPCA(sce_combine, 
+                                          colour_by = "cellTypes",
+                                          run_args = list(exprs_values = "logcounts"))
 
-plot_sce_cellTypes_batch(sce_combine, exprs_values = "logcounts")
+pca_logcounts_batch = scater::plotPCA(sce_combine, 
+                                      colour_by = "batch",
+                                      run_args = list(exprs_values = "logcounts"))
+
+grid.arrange(pca_logcounts_cellTypes, pca_logcounts_batch, nrow = 1)
 ```
 
 
 
-
-```{r}
+```{r, fig.width=6, fig.height=6}
 data("segList_ensemblGeneID", package = "scMerge")
 
 sce_scMerge <- scMerge(
@@ -215,25 +139,26 @@ sce_scMerge <- scMerge(
 ```
 
 
-```{r}
+```{r, fig.width=12, fig.height=6, message=FALSE}
 sce_scMerge
 
-plot_sce_cellTypes_batch(sce = sce_scMerge, exprs_values = "scMerge_supervised")
-```
+pca_scMerge_supervised_cellTypes = scater::plotPCA(sce_scMerge, 
+                                                   colour_by = "cellTypes",
+                                                   run_args = list(exprs_values = "scMerge_supervised"))
 
+pca_scMerge_supervised_batch = scater::plotPCA(sce_scMerge, 
+                                               colour_by = "batch",
+                                               run_args = list(exprs_values = "scMerge_supervised"))
 
-```{r, eval = FALSE}
-saveRDS(sce_scMerge, file = "data/liver_scMerge_2019_May_29.RDS")
+grid.arrange(pca_scMerge_supervised_cellTypes, pca_scMerge_supervised_batch, nrow = 1)
 ```
 
 # Unsupervised scMerge
 
-This is not working at the moment.
-
-```{r}
-sce_scMerge2 <- scMerge(
-  sce_combine = sce_combine,
-  ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
+```{r, fig.width=6, fig.height=6}
+sce_scMerge <- scMerge(
+  sce_combine = sce_scMerge,
+  ctl = which(rownames(sce_scMerge) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
   kmeansK = c(6,2),
   replicate_prop = 1,
   assay_name = "scMerge_unsupervised",
@@ -241,21 +166,28 @@ sce_scMerge2 <- scMerge(
 ```
 
 
-```{r}
-plot_sce_cellTypes_batch(sce = sce_scMerge2, 
-                         exprs_values = "scMerge_unsupervised")
+```{r, fig.width=12, fig.height=6, message=FALSE}
+pca_scMerge_unsupervised_cellTypes = scater::plotPCA(sce_scMerge, 
+                                                   colour_by = "cellTypes",
+                                                   run_args = list(exprs_values = "scMerge_unsupervised"))
+
+pca_scMerge_unsupervised_batch = scater::plotPCA(sce_scMerge, 
+                                               colour_by = "batch",
+                                               run_args = list(exprs_values = "scMerge_unsupervised"))
+
+grid.arrange(pca_scMerge_unsupervised_cellTypes, pca_scMerge_unsupervised_batch, nrow = 1)
 ```
 
 
 # Semi-supervised scMerge
 
-```{r}
-sce_scMerge3 <- scMerge(
-  sce_combine = sce_combine,
-  ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
+```{r, fig.width=6, fig.height=6}
+sce_scMerge <- scMerge(
+  sce_combine = sce_scMerge,
+  ctl = which(rownames(sce_scMerge) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
   kmeansK = c(6,2),
   replicate_prop = 1,
-  WV = sce_combine$stage,
+  WV = sce_scMerge$stage,
   # WV_marker = c("Afp","Alb","Epcam"),
   WV_marker = c("ENSMUSG00000045394","ENSMUSG00000054932","ENSMUSG00000045394"),
   assay_name = "scMerge_semisupervised",
@@ -263,9 +195,16 @@ sce_scMerge3 <- scMerge(
 ```
 
 
-```{r}
-plot_sce_cellTypes_batch(sce = sce_scMerge3, 
-                         exprs_values = "scMerge_semisupervised")
+```{r, fig.width=12, fig.height=6, message=FALSE}
+pca_scMerge_semisupervised_cellTypes = scater::plotPCA(sce_scMerge, 
+                                                   colour_by = "cellTypes",
+                                                   run_args = list(exprs_values = "scMerge_semisupervised"))
+
+pca_scMerge_semisupervised_batch = scater::plotPCA(sce_scMerge, 
+                                               colour_by = "batch",
+                                               run_args = list(exprs_values = "scMerge_semisupervised"))
+
+grid.arrange(pca_scMerge_semisupervised_cellTypes, pca_scMerge_semisupervised_batch, nrow = 1)
 ```
 
 

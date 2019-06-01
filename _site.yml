@@ -11,7 +11,7 @@ navbar:
       href: scMerge.html
     - text: "Downstream Analysis"
       href: downstream.html
-    - text: "acknowledgement"
+    - text: "Acknowledgement"
       href: acknowledgement.html
 output_dir: "."
 output:

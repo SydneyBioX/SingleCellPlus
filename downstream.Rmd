@@ -6,82 +6,18 @@ output: html_document
 ---
 
 
-As discussed in 3rd May 2019, Taiyun will work on the `scClust` component and Yingxin will work on the `monocle` component.  
-
-Kevin can only work on this if he is instructed by Jean/Kitty/Pengyi what downstream analysis (even if it is DE, I need to know what comparisons) to show. If Yingxin has already worked on this, then some code should be posted here. 
+As discussed in 1st June 2019, Taiyun will work on the `scClust` component and Yingxin will work on the `monocle` component.  
 
 
 ```{r, echo = FALSE}
 library(SingleCellExperiment)
-library(dplyr)
-sce_scMerge = readRDS(file = "data/liver_scMerge.RDS")
-```
 
-# SC3
-```{r, eval = FALSE}
-library(SC3)
-rowData(sce_scMerge)$feature_symbol = rownames(sce_scMerge)
-table(sce_scMerge$cellTypes) %>% length
-sce_clust <- sc3(sce_scMerge, ks = 8, biology = TRUE, n_cores = 4)
+scMerge_full = readRDS("data/liver_scMerge.rds") ## Downloaded from https://sydneybiox.github.io/scMerge/articles/case_study/Mouse_Liver_Data.html
 
-sc3_interactive(sce_clust)
 ```
 
 
-# monocle
-
-```{r, eval = FALSE}
-library(monocle)
-
-rowData(sce_scMerge) = DataFrame(ensemblGeneID = rownames(sce_scMerge))
-expressed_genes = rowMeans(SingleCellExperiment::counts(sce_scMerge) == 0)
-hist(expressed_genes)
-
-
-sce_scMerge_monocle = scran::convertTo(
-  sce_scMerge,
-  type = "monocle",
-  assay.type = "logcounts",
-  col.fields = c("cellTypes", "stage", "batch")) %>%
-  estimateSizeFactors()
-
-
-
-
-diff_test_res <- differentialGeneTest(
-  sce_scMerge_monocle[expressed_genes < 0.1], fullModelFormulaStr = "~stage+cellTypes")
-ordering_genes <- row.names(subset(diff_test_res, qval < 0.01))
-
-sce_scMerge_monocle <- setOrderingFilter(sce_scMerge_monocle, ordering_genes)
-
-sce_scMerge_monocle = estimateDispersions(sce_scMerge_monocle)
-plot_ordering_genes(sce_scMerge_monocle)
-sce_scMerge_monocle <- reduceDimension(sce_scMerge_monocle, max_components = 2,
-                                       method = 'DDRTree')
-
-sce_scMerge_monocle <- orderCells(sce_scMerge_monocle)
-
-plot_cell_trajectory(sce_scMerge_monocle, color_by = "stage")
-```
-
-
-
-
-# t-test
 ```{r}
-library(genefilter)
-table(sce_scMerge$cellTypes)
-sce_scMerge_Mcell = sce_scMerge[,sce_scMerge$cellTypes == "Hepatoblast"]
-
-logcounts_Mcell = logcounts(sce_scMerge_Mcell)
-
-scMerge_Mcell = assay(sce_scMerge_Mcell, "scMerge_supervised")
-
-logcounts_Mcell_batch_ttest = rowFtests(logcounts_Mcell, 
-                                        fac = factor(sce_scMerge_Mcell$batch))
-scMerge_Mcell_batch_ttest = rowFtests(scMerge_Mcell, 
-                                      fac = factor(sce_scMerge_Mcell$batch))
-
-hist(logcounts_Mcell_batch_ttest$p.value)
-hist(scMerge_Mcell_batch_ttest$p.value)
+colData(scMerge_full)
 ```
+
