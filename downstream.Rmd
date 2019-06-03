@@ -9,8 +9,10 @@ output: html_document
 As discussed in 1st June 2019, Taiyun will work on the `scClust` component and Yingxin will work on the `monocle` component.  
 
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, message = FALSE}
 library(SingleCellExperiment)
+library(scater)
+library(gridExtra)
 
 scMerge_full = readRDS("data/liver_scMerge.rds") ## Downloaded from https://sydneybiox.github.io/scMerge/articles/case_study/Mouse_Liver_Data.html
 
@@ -19,5 +21,26 @@ scMerge_full = readRDS("data/liver_scMerge.rds") ## Downloaded from https://sydn
 
 ```{r}
 colData(scMerge_full)
+
+scMerge_full
 ```
+
+```{r, fig.width=12, fig.height=6, message=FALSE}
+subset_data = scMerge_full[,scMerge_full$batch %in% c("GSE87795", "GSE90047")]
+
+
+pca_scMerge_cellTypes = scater::plotPCA(subset_data, 
+                                                   colour_by = "cellTypes",
+                                                   run_args = list(exprs_values = "scMerge")) +
+  scale_fill_brewer(palette = "Set1")
+
+pca_scMerge_batch = scater::plotPCA(subset_data, 
+                                               colour_by = "batch",
+                                               run_args = list(exprs_values = "scMerge")) +
+  scale_fill_brewer(palette = "Dark2")
+
+grid.arrange(pca_scMerge_cellTypes, pca_scMerge_batch, nrow = 1)
+```
+
+
 

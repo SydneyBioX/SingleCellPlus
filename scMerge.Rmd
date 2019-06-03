@@ -81,6 +81,10 @@ library(forcats)
 library(tibble)
 library(dplyr)
 
+theme_set(theme_classic(16)
+            # theme(legend.position = "bottom")
+          )
+
 
 # purrr::map(sce_list, ~ colData(.x) %>% colnames)
 
@@ -91,7 +95,7 @@ sce_combine = scMerge::sce_cbind(sce_list = sce_list,
 
 cat("Please copy and paste this")
 
-sce_combine = sce_combine[,stringr::str_detect(sce_combine$cellTypes, "cholangiocyte|Epithelial Cell|hepatoblast|Hepatoblast|Mesenchymal Cell|Endothelial Cell|Hematopoietic|Immune cell|Stellate Cell")]
+# sce_combine = sce_combine[,stringr::str_detect(sce_combine$cellTypes, "cholangiocyte|Epithelial Cell|hepatoblast|Hepatoblast|Mesenchymal Cell|Endothelial Cell|Hematopoietic|Immune cell|Stellate Cell")]
 
 colData(sce_combine)$cellTypes = forcats::fct_recode(
   colData(sce_combine)$cellTypes, 
@@ -113,13 +117,37 @@ table(sce_combine$cellTypes, sce_combine$stage)
 
 table(sce_combine$batch, sce_combine$stage)
 
+
+
+cell_data = colData(sce_combine) %>% 
+  as.data.frame() %>% 
+  group_by(cellTypes, stage, batch) %>%
+  dplyr::summarise(n = n()) %>% 
+  ungroup() %>% 
+  tidyr::complete(cellTypes, stage, batch, fill = list(n = 0)) %>%
+  dplyr::mutate(
+    stage = factor(stage, levels = sort(unique(levels(stage))))
+    )
+
+cell_data %>% 
+  ggplot(aes(x = stage, y = cellTypes, fill = n, label = n)) +
+  geom_tile() +
+  geom_text() +
+  facet_wrap(~batch) +
+  scale_fill_distiller(palette = "Reds", direction = 1) +
+  labs(title = "Number of cells split by batch, celltypes and stage")
+
+
+
 pca_logcounts_cellTypes = scater::plotPCA(sce_combine, 
                                           colour_by = "cellTypes",
-                                          run_args = list(exprs_values = "logcounts"))
+                                          run_args = list(exprs_values = "logcounts")) +
+  scale_fill_brewer(palette = "Set1")
 
 pca_logcounts_batch = scater::plotPCA(sce_combine, 
                                       colour_by = "batch",
-                                      run_args = list(exprs_values = "logcounts"))
+                                      run_args = list(exprs_values = "logcounts")) +
+  scale_fill_brewer(palette = "Dark2")
 
 grid.arrange(pca_logcounts_cellTypes, pca_logcounts_batch, nrow = 1)
 ```
@@ -144,22 +172,27 @@ sce_scMerge
 
 pca_scMerge_supervised_cellTypes = scater::plotPCA(sce_scMerge, 
                                                    colour_by = "cellTypes",
-                                                   run_args = list(exprs_values = "scMerge_supervised"))
+                                                   run_args = list(exprs_values = "scMerge_supervised")) +
+  scale_fill_brewer(palette = "Set1")
 
 pca_scMerge_supervised_batch = scater::plotPCA(sce_scMerge, 
                                                colour_by = "batch",
-                                               run_args = list(exprs_values = "scMerge_supervised"))
+                                               run_args = list(exprs_values = "scMerge_supervised")) +
+  scale_fill_brewer(palette = "Dark2")
 
 grid.arrange(pca_scMerge_supervised_cellTypes, pca_scMerge_supervised_batch, nrow = 1)
+
+supervised_cluster = metadata(sce_scMerge)[["scRep_res"]] %>% 
+  apply(1, which.max)
 ```
 
 # Unsupervised scMerge
 
 ```{r, fig.width=6, fig.height=6}
 sce_scMerge <- scMerge(
-  sce_combine = sce_scMerge,
-  ctl = which(rownames(sce_scMerge) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
-  kmeansK = c(6,2),
+  sce_combine = sce_combine,
+  ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
+  kmeansK = c(6, 2),
   replicate_prop = 1,
   assay_name = "scMerge_unsupervised",
   verbose = TRUE)
@@ -169,13 +202,43 @@ sce_scMerge <- scMerge(
 ```{r, fig.width=12, fig.height=6, message=FALSE}
 pca_scMerge_unsupervised_cellTypes = scater::plotPCA(sce_scMerge, 
                                                    colour_by = "cellTypes",
-                                                   run_args = list(exprs_values = "scMerge_unsupervised"))
+                                                   run_args = list(exprs_values = "scMerge_unsupervised")) +
+  scale_fill_brewer(palette = "Set1")
 
 pca_scMerge_unsupervised_batch = scater::plotPCA(sce_scMerge, 
                                                colour_by = "batch",
-                                               run_args = list(exprs_values = "scMerge_unsupervised"))
+                                               run_args = list(exprs_values = "scMerge_unsupervised")) +
+  scale_fill_brewer(palette = "Dark2")
 
 grid.arrange(pca_scMerge_unsupervised_cellTypes, pca_scMerge_unsupervised_batch, nrow = 1)
+
+
+
+
+unsupervised_cluster = metadata(sce_scMerge)[["scRep_res"]] %>% 
+  apply(1, which.max)
+
+sce_pca = scater::runPCA(sce_scMerge, exprs_values = "scMerge_unsupervised")
+pca_mat = sce_pca@reducedDims@listData$PCA
+colnames(pca_mat) = c("pca1", "pca2")
+pca_df = bind_cols(data.frame(pca_mat), as.data.frame(colData(sce_pca))) %>% 
+  mutate(
+    supervised_cluster = as.factor(supervised_cluster), 
+    unsupervised_cluster = as.factor(unsupervised_cluster))
+
+pca_df_summ = pca_df %>% 
+  group_by(supervised_cluster, cellTypes, unsupervised_cluster) %>% 
+  dplyr::tally()
+
+pca_df_summ
+
+pca_df_summ %>% 
+  ggplot(aes(x = unsupervised_cluster, 
+             y = cellTypes,
+             fill = n, 
+             label = n)) +
+  geom_tile() +
+  geom_text()
 ```
 
 
@@ -183,8 +246,8 @@ grid.arrange(pca_scMerge_unsupervised_cellTypes, pca_scMerge_unsupervised_batch,
 
 ```{r, fig.width=6, fig.height=6}
 sce_scMerge <- scMerge(
-  sce_combine = sce_scMerge,
-  ctl = which(rownames(sce_scMerge) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
+  sce_combine = sce_combine,
+  ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
   kmeansK = c(6,2),
   replicate_prop = 1,
   WV = sce_scMerge$stage,
@@ -206,6 +269,30 @@ pca_scMerge_semisupervised_batch = scater::plotPCA(sce_scMerge,
 
 grid.arrange(pca_scMerge_semisupervised_cellTypes, pca_scMerge_semisupervised_batch, nrow = 1)
 ```
+
+
+
+<!-- ```{r} -->
+<!-- scater::plotExpression(sce_scMerge[,sce_scMerge$cellTypes == "Hepatoblast"], -->
+<!--                        features = c("ENSMUSG00000045394","ENSMUSG00000054932","ENSMUSG00000045394"),  -->
+<!--                        exprs_values = "scMerge_supervised",  -->
+<!--                        colour_by = "batch") + -->
+<!--   labs(title = "Expression of the WV marker genes for Hepatoblast only in supervied-scMerge") -->
+
+
+<!-- scater::plotExpression(sce_scMerge[,sce_scMerge$cellTypes == "Hepatoblast"], -->
+<!--                        features = c("ENSMUSG00000045394","ENSMUSG00000054932","ENSMUSG00000045394"),  -->
+<!--                        exprs_values = "scMerge_unsupervised",  -->
+<!--                        colour_by = "batch") + -->
+<!--   labs(title = "Expression of the WV marker genes for Hepatoblast only in unsupervied-scMerge") -->
+
+
+<!-- scater::plotExpression(sce_scMerge[,sce_scMerge$cellTypes == "Hepatoblast"], -->
+<!--                        features = c("ENSMUSG00000045394","ENSMUSG00000054932","ENSMUSG00000045394"),  -->
+<!--                        exprs_values = "scMerge_semisupervised",  -->
+<!--                        colour_by = "batch") + -->
+<!--   labs(title = "Expression of the WV marker genes for Hepatoblast only in semisupervied-scMerge") -->
+<!-- ``` -->
 
 
 

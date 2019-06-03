@@ -335,6 +335,32 @@ $(document).ready(function () {
 ## F3A_E16.5          Stellate Cell    GSE96981
 ## F5A_E16.5 hepatoblast/hepatocyte    GSE96981
 ## F6A_E16.5          Stellate Cell    GSE96981</code></pre>
+<pre class="r"><code>scMerge_full</code></pre>
+<pre><code>## class: SingleCellExperiment 
+## dim: 22864 1236 
+## metadata(0):
+## assays(1): scMerge
+## rownames(22864): Gm19938 Sox17 ... Gm47123 Gm48236
+## rowData names(0):
+## colnames(1236): E11.5_C07 E11.5_C44 ... F5A_E16.5 F6A_E16.5
+## colData names(2): cellTypes batch
+## reducedDimNames(0):
+## spikeNames(0):</code></pre>
+<pre class="r"><code>subset_data = scMerge_full[,scMerge_full$batch %in% c(&quot;GSE87795&quot;, &quot;GSE90047&quot;)]
+
+
+pca_scMerge_cellTypes = scater::plotPCA(subset_data, 
+                                                   colour_by = &quot;cellTypes&quot;,
+                                                   run_args = list(exprs_values = &quot;scMerge&quot;)) +
+  scale_fill_brewer(palette = &quot;Set1&quot;)
+
+pca_scMerge_batch = scater::plotPCA(subset_data, 
+                                               colour_by = &quot;batch&quot;,
+                                               run_args = list(exprs_values = &quot;scMerge&quot;)) +
+  scale_fill_brewer(palette = &quot;Dark2&quot;)
+
+grid.arrange(pca_scMerge_cellTypes, pca_scMerge_batch, nrow = 1)</code></pre>
+<p><img src="downstream_files/figure-html/unnamed-chunk-3-1.png" width="1152" /></p>
 
 
 
