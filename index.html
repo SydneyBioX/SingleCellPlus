@@ -341,9 +341,14 @@ $(document).ready(function () {
 </div>
 <div id="installation" class="section level1">
 <h1>Installation</h1>
-<pre class="r"><code>install.packages(&quot;BiocManager&quot;)
-
-BiocManager::install(c(&quot;scMerge&quot;, &quot;plotly&quot;, &quot;scater&quot;, &quot;monocle&quot;, &quot;Rtsne&quot;, &quot;DropletUtils&quot;))</code></pre>
+<pre class="r"><code>install.packages(c(&quot;BiocManager&quot;, &quot;devtools&quot;))
+BiocManager::install(c(&quot;scMerge&quot;, &quot;scran&quot;, &quot;scater&quot;, &quot;monocle&quot;, &quot;Rtsne&quot;, &quot;DropletUtils&quot;))
+devtools::install_github(&quot;SydneyBioX/scdney&quot;)</code></pre>
+<div id="for-mac-users" class="section level2">
+<h2>For Mac users</h2>
+<p>If you could not run <code>devtools::install_github("SydneyBioX/scdney")</code>, then please try the following code instead.</p>
+<pre class="r"><code>install.packages(&quot;https://github.com/SydneyBioX/SingleCellPlus/raw/master/scdney_mac_binary/scdney_0.1.2.tgz&quot;, repos = NULL)</code></pre>
+</div>
 </div>
 
 

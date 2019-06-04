@@ -34,10 +34,16 @@ Ideally, you should be somewhat familiar with `R`. However, if you haven't used 
 # Installation 
 
 ```{r, eval = FALSE}
-install.packages("BiocManager")
-
-BiocManager::install(c("scMerge", "plotly", "scater", "monocle", "Rtsne", "DropletUtils"))
+install.packages(c("BiocManager", "devtools"))
+BiocManager::install(c("scMerge", "scran", "scater", "monocle", "Rtsne", "DropletUtils"))
+devtools::install_github("SydneyBioX/scdney")
 ```
 
+## For Mac users
 
+If you could not run `devtools::install_github("SydneyBioX/scdney")`, then please try the following code instead. 
+
+```{r, eval = FALSE}
+install.packages("https://github.com/SydneyBioX/SingleCellPlus/raw/master/scdney_mac_binary/scdney_0.1.2.tgz", repos = NULL)
+```
 
