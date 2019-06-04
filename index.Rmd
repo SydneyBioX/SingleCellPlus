@@ -44,6 +44,6 @@ devtools::install_github("SydneyBioX/scdney")
 If you could not run `devtools::install_github("SydneyBioX/scdney")`, then please try the following code instead. 
 
 ```{r, eval = FALSE}
-install.packages("https://github.com/SydneyBioX/SingleCellPlus/raw/master/scdney_mac_binary/scdney_0.1.2.tgz", repos = NULL)
+install.packages("https://github.com/kevinwang09/SingleCellPlus/raw/master/scdney_mac_binary/scdney_0.1.2.tgz", repos = NULL)
 ```
 

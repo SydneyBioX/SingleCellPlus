@@ -1,0 +1,20 @@
+---
+title: "Cheats"
+author: "Kevin Wang"
+date: "04/06/2019"
+output: html_document
+---
+
+# `R 3.5` installation of `scMerge`
+
+https://github.com/SydneyBioX/scMerge/issues/11
+
+```{r, eval = FALSE}
+## scMerge V0.99.2, compatible with R 3.5.2 and Bioconductor 3.8
+devtools::install_github("SydneyBioX/scMerge", ref = "280a7724cd49f10e535f4023a085bc6dc7dc432d") 
+
+## scMerge V0.99.6, the last compatible version with R3.5
+devtools::install_github("SydneyBioX/scMerge", ref = "13d4b147b3fab795eb89852188d4708797cbea44")
+
+```
+
