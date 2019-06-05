@@ -1,7 +1,7 @@
 ---
 title: "Acknowledgement HKU workshop"
 author: "Sydney Precision Bioinformatics Group"
-date: "03/05/2019"
+date: "18 June 2019"
 output: html_document
 ---
 
@@ -11,6 +11,16 @@ output: html_document
 
 + Dr. Kitty Lo was funded by... 
 
-+ Mr. Kevin Wang was funded by... 
++ Mr. Kevin Wang was funded by the Golden Jubilee Travel Grant from the Statistical Society of Australia.  
+
++ The workshop was developed/adviced from the following members of the Sydney Precision Bioinformatics Group (in alphabetical order)
+  
+    * Ms. Yue Cao
+    * Ms. Hani Kim 
+    * Mr. Taiyun Kim
+    * Ms. Yingxin Lin
+    * Mr. Kevin Wang
+    * Prof. Jean Yang
+    * Dr. Pengyi Yang
 
 + This website was constructed upon consultations from https://jules32.github.io/rmarkdown-website-tutorial/. 

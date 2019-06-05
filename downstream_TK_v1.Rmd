@@ -1,0 +1,307 @@
+---
+title: "Downstream analysis"
+author: "Sydney Precision Bioinformatics Group"
+date: "03/05/2019"
+output: html_document
+---
+
+# Introduction
+
+<!-- Clustering is a type of machine learning technique used to partition/group data into `N` distinct groups by comparing combination of given features between each samples.  -->
+
+<!-- In order to differentiate samples that are similar or different, we need to use an appropriate similarity metric for the data. In single cell research, there have been increase in development of clustering algorithms to optimise the performance specifically for single cell data. However,  -->
+
+<!-- common technique used in single cell downstream analysis to identify cell type  -->
+
+
+
+
+
+
+```{r}
+# This section is to install package that will be required to proceed with this section of the workshop.
+
+# If you do not have "devtools" installed, uncomment the following line and run on your console
+# install.packages("devtools")
+
+# devtools::install_github("SydneyBioX/scdney")
+```
+
+You may visit our package website for the vignette of `scdney` package.
+
+```{r, echo = FALSE, warning=FALSE}
+
+suppressPackageStartupMessages({
+  library(SingleCellExperiment)
+  library(SummarizedExperiment)
+  library(dplyr)
+  library(edgeR)
+  library(scdney)
+  library(mclust)
+  library(Rtsne)
+  library(parallel)
+  library(cluster)
+})
+# sce_scMerge = readRDS(file = "data/liver_scMerge_2019_May_29.RDS")
+# sce_scMerge = readRDS("~/Dropbox (Sydney Uni)/workdir/singleCell/workshop/data/liver_scMerge.rds")
+
+sce_scMerge = readRDS("~/Desktop/liver_scMerge.rds")
+```
+
+```{r}
+# We will subset Su et al. and Yang et al. datasets.
+ids = which(colData(sce_scMerge)$batch %in% c("GSE87795", "GSE90047"))
+
+lab = colData(sce_scMerge)$cellTypes[ids]
+
+nCs = length(table(lab))
+
+mat = SummarizedExperiment::assay(sce_scMerge, "scMerge")[,ids]
+
+
+```
+
+
+# Cell type proportion
+
+```{r, fig.width = 7, fig.height=7}
+par(mar=c(10,7,2,2))
+barplot(table(lab), las = 2, ylab = "No. of cells", main = "Cell type proportion")
+
+```
+
+We observe that hepatoblast/hepatocyte is the largest population.
+
+## Visualisation
+
+```{r, fig.width=7, fig.height=7}
+# create tsne object
+set.seed(123)
+tsne_result = Rtsne(t(mat), check_duplicates = FALSE)
+
+plot(tsne_result$Y, col = factor(lab) , main = "t-SNE plot (cells coloured by known cell types")
+```
+
+# Cell Type identification
+
+The data from single cell RNA-sequencing experiment does not provide cell type information for individual cells. We need to identify cell types of indivdual cells in our data with bioinformatics analysis. 
+
+One common method to explore single cell data is by clustering. Clustering is a type of machine learning technique to group similar samples (cell) to the same group and partition samples that are different by comparing their feature information (gene expression). To optimise clustering method, algorithm and similarity metric are two key components that affects clustering performance. 
+
+In our recent study, we found pearson correlation to be optimal similarity metric for comparing single cell RNA-seq data ( [*Kim et al., 2018*](https://academic.oup.com/bib/advance-article-abstract/doi/10.1093/bib/bby076/5077112?redirectedFrom=fulltext) ). Therefore in this workshop, we will utilise `scClust` in our `scdney` package, which implemented 2017 Nature methods clustering algorithm `SIMLR` with pearson correlation.
+
+We need to validate the number of clusters (`k`) in this dataset. there actually are in an unsupervised approach.
+
+## scClust (with SIMLR and pearson correlation)
+
+```{r, warning=FALSE}
+# k = 6
+simlr_result_k6 = scClust(mat, 6, similarity = "pearson", method = "simlr", seed = 1, cores.ratio = 0, geneFilter = 0)
+
+# We will not run for various `k` to save time. Instead, we will load pre-computed result
+# all_k = 3:8
+# simlr.results = sapply(as.character(all_k), function(k) {
+#   scClust(mat, as.numeric(k), similarity = "pearson", method = "simlr", seed = 1, cores.ratio = 0, geneFilter = 0)
+# }, USE.NAMES = TRUE, simplify = FALSE)
+
+
+load(paste(getwd(), "/data/simlr.results.RData", sep = ""))
+
+```
+
+## Find optimal `k`
+
+```{r}
+all_wss = sapply(simlr_results, function(result) {
+  sum(result$y$withinss)
+}, USE.NAMES = TRUE, simplify = TRUE)
+
+plot(x = names(all_wss), y = all_wss, main = "Total WSS for each k", xlab = "k", ylab = "total WSS")
+
+```
+
+As shown in this plot, the graph begin to plateau from `k` = 5. We can estimate that k is around 5 or 6. We can further investigate using silhouette scores or other metrics but using our t-SNE plot (and with a little cheating) we will estimate `k` = 6. 
+
+
+```{r}
+plot(tsne_result$Y, col = simlr_result_k6$y$cluster, main = "t-SNE plot coloured by cluster output")
+```
+
+
+## Validation
+
+
+```{r}
+
+```
+
+
+## Comparison of our result with cell type information
+
+```{r, fig.width=10, fig.height=5}
+mclust::adjustedRandIndex(lab, simlr_result_k6$y$cluster)
+igraph::compare(as.numeric(factor(simlr_result_k6$y$cluster)), as.numeric(factor(lab)), method = "nmi")
+
+par(mfrow=c(1,2))
+plot(tsne_result$Y, col = factor(lab), main = "t-SNE coloured by cell type information")
+plot(tsne_result$Y, col = simlr_result_k6$y$cluster, main = "t-SNE coloured by our result")
+
+```
+
+
+
+# Distribution of marker genes
+
+There are 6 cell types in the dataset. We have obtained some marker genes for all the 6 cell types through some literature search. In this section, we will explain how we can visualise the distribution of marker genes.  
+
+## Endothelial
+
+Firstly, we can colour the t-SNE plot using the provided cell labels. In the figure eblow,  Endothelial cells is red and the rest of the cells is black.    
+
+We can then colour the t-SNE plot according to expression value of Endothelial cells marker genes.   
+
+For example, in the code provided below, we first used which() to find out which row contains Sox17 gene. We then used ifelse() to indicate that, if a cell has Sox17 expression value < 2, then this cell will be coloured red, otherwise it will be coloured green.    
+
+The figure below illustrates that  most of the cells in the top right cluster is coloured green and almost all the other cells is coloured red. This indicates that cells in the top right cluster are indeed different from the remaining cells in their expression pattern of Sox17. This potentially suggests that these cells belong to endothelial cells.    
+
+```{r}
+plot(tsne_result$Y, col = factor(lab == "Endothelial Cell"), main = "Endothelial Cell" )
+
+
+index <- which(rownames(sce_scMerge[,ids]) == "Sox17")
+plot(tsne_result$Y, col = ifelse( mat[2,] < 2 ,'red','green'), main = "Sox17")
+
+
+index <- which(rownames(sce_scMerge[,ids]) == "Sox18")
+#hist(mat[index,])
+plot(tsne_result$Y, col = ifelse( mat[index,] < 2 ,'red','green'), main = "Sox18")
+
+
+
+index <- which(rownames(sce_scMerge[,ids]) == "Sox7")
+#hist(mat[index,])
+
+plot(tsne_result$Y, col = ifelse( mat[index,] < 2 ,'red','green'), main = "Sox7")
+
+
+```
+
+
+## cholangiocyte
+We can repeat the procudure on other cell type of interest. 
+```{r}
+
+
+plot(tsne_result$Y, col = factor(lab == "cholangiocyte") , main  = "cholangiocyte")
+
+
+index <- which(rownames(sce_scMerge[,ids]) == "Sox9")
+#hist(mat[index,])
+plot(tsne_result$Y, col = ifelse( mat[index,] < 6 ,'red','green'), main = "Sox9")
+
+
+index <- which(rownames(sce_scMerge[,ids]) == "Epcam")
+hist(mat[index,])
+plot(tsne_result$Y, col = ifelse( mat[index,] < 6 ,'red','green'), main = "Epcam")
+
+
+
+index <- which(rownames(sce_scMerge[,ids]) == "Krt19")
+#hist(mat[index,])
+
+plot(tsne_result$Y, col = ifelse( mat[index,] < 2 ,'red','green'), main = "Krt19")
+
+
+```
+
+
+
+```{r}
+
+plot(tsne_result$Y, col = factor(lab == "Mesenchymal Cell"), main = "Mesenchymal Cell")
+
+
+index <- which(rownames(sce_scMerge[,ids]) == "Map2")
+#hist(mat[index,])
+plot(tsne_result$Y, col = ifelse( mat[index,] > -1.5 ,'red','green'), main = "Map2")
+
+
+index <- which(rownames(sce_scMerge[,ids]) == "Gfap")
+#hist(mat[index,])
+plot(tsne_result$Y, col = ifelse( mat[index,] < 0.6 ,'red','green'), main = "Gfap")
+
+
+
+
+```
+
+
+
+
+## hepatoblast/hepatocyte
+
+```{r}
+
+plot(tsne_result$Y, col = factor(lab == "hepatoblast/hepatocyte"), main = "hepatoblast/hepatocyte" )
+
+
+index <- which(rownames(sce_scMerge[,ids]) == "Foxa2")
+#hist(mat[index,])
+plot(tsne_result$Y, col = ifelse( mat[index,] < 2 ,'red','green'), main = "Foxa2")
+
+
+index <- which(rownames(sce_scMerge[,ids]) == "Hnf4a")
+#hist(mat[index,])
+plot(tsne_result$Y, col = ifelse( mat[index,] < 2 ,'red','green'), main = "Hnf4a")
+
+
+```
+
+
+
+
+## Hematopoietic
+
+```{r}
+
+plot(tsne_result$Y, col = factor(lab == "Hematopoietic"), main = "Hematopoietic" )
+
+
+index <- which(rownames(sce_scMerge[,ids]) == "Mpl")
+#hist(mat[index,])
+plot(tsne_result$Y, col = ifelse( mat[index,] <1.5 ,'red','green'), main = "Mpl")
+
+
+
+
+
+
+```
+
+## Immune cell 
+```{r}
+
+plot(tsne_result$Y, col = factor(lab == "Immune cell"), main = "Immune cell")
+
+
+index <- which(rownames(sce_scMerge[,ids]) == "S100a9")
+#hist(mat[index,])
+plot(tsne_result$Y, col = ifelse( mat[index,] < 2 ,'red','green'), main = "S100a9")
+
+
+index <- which(rownames(sce_scMerge[,ids]) == "Fcer1g")
+#hist(mat[index,])
+plot(tsne_result$Y, col = ifelse( mat[index,] < 5 ,'red','green'), main = "Fcer1g")
+
+
+
+index <- which(rownames(sce_scMerge[,ids]) == "Cd69")
+#hist(mat[index,])
+plot(tsne_result$Y, col = ifelse( mat[index,] < 5 ,'red','green'), main = "Cd69")
+```
+
+# SessionInfo
+
+```{r}
+sessionInfo()
+```

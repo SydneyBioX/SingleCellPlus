@@ -1,26 +1,25 @@
 ---
 title: "HKU workshop"
 author: "Sydney Precision Bioinformatics Group"
-date: "03/05/2019"
+date: "18 June 2019"
 output: html_document
 ---
 
-This is the index page. 
-
-
 # The Single Cell Plus Workshop
 
-This workshop is part of a joint research initiative between Hong Kong University and the University of Sydney. 
+This workshop is part of a joint research initiative between Hong Kong University and the University of Sydney.
 
 
-In this workshop we will present thre main topics: 
+# Aim of this workshop
+
+In this workshop we will present thre main topics that are critical to single-cell analysis. We will mainly be using 2 mouse liver data for analysis. 
 
   1. Quality control of sc-RNASeq data,
   1. The `scMerge` package for integrating multiple sc-RNASeq data, 
   1. Some possible downstream analysis after `scMerge`. 
 
 
-At the end of this workshop you should have some basic understanding of scRNASeq data and how to deal with them. 
+At the end of this workshop you should have some basic understanding of scRNASeq data and some key computational and statistical challenges of this type of data. 
 
 
 # Prerequisites
@@ -33,6 +32,8 @@ Ideally, you should be somewhat familiar with `R`. However, if you haven't used 
 
 # Installation 
 
+You should be able to run the codes below in `R` to install all the packages needed in this workshop. If you encounter any problems. Please let one of the instructors know. 
+
 ```{r, eval = FALSE}
 install.packages(c("BiocManager", "devtools"))
 BiocManager::install(c("scMerge", "scran", "scater", "monocle", "Rtsne", "DropletUtils"))
@@ -41,9 +42,10 @@ devtools::install_github("SydneyBioX/scdney")
 
 ## For Mac users
 
-If you could not run `devtools::install_github("SydneyBioX/scdney")`, then please try the following code instead. 
+If you could not run the last line of the above instructions (`devtools::install_github("SydneyBioX/scdney")`), then please try the following code instead. 
 
 ```{r, eval = FALSE}
 install.packages("https://github.com/kevinwang09/SingleCellPlus/raw/master/scdney_mac_binary/scdney_0.1.2.tgz", repos = NULL)
 ```
 
+# Reference

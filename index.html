@@ -11,7 +11,7 @@
 
 <meta name="author" content="Sydney Precision Bioinformatics Group" />
 
-<meta name="date" content="2019-03-05" />
+<meta name="date" content="2019-06-18" />
 
 <title>HKU workshop</title>
 
@@ -314,22 +314,24 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">HKU workshop</h1>
 <h4 class="author">Sydney Precision Bioinformatics Group</h4>
-<h4 class="date">03/05/2019</h4>
+<h4 class="date">18 June 2019</h4>
 
 </div>
 
 
-<p>This is the index page.</p>
 <div id="the-single-cell-plus-workshop" class="section level1">
 <h1>The Single Cell Plus Workshop</h1>
 <p>This workshop is part of a joint research initiative between Hong Kong University and the University of Sydney.</p>
-<p>In this workshop we will present thre main topics:</p>
+</div>
+<div id="aim-of-this-workshop" class="section level1">
+<h1>Aim of this workshop</h1>
+<p>In this workshop we will present thre main topics that are critical to single-cell analysis. We will mainly be using 2 mouse liver data for analysis.</p>
 <ol style="list-style-type: decimal">
 <li>Quality control of sc-RNASeq data,</li>
 <li>The <code>scMerge</code> package for integrating multiple sc-RNASeq data,</li>
 <li>Some possible downstream analysis after <code>scMerge</code>.</li>
 </ol>
-<p>At the end of this workshop you should have some basic understanding of scRNASeq data and how to deal with them.</p>
+<p>At the end of this workshop you should have some basic understanding of scRNASeq data and some key computational and statistical challenges of this type of data.</p>
 </div>
 <div id="prerequisites" class="section level1">
 <h1>Prerequisites</h1>
@@ -341,14 +343,18 @@ $(document).ready(function () {
 </div>
 <div id="installation" class="section level1">
 <h1>Installation</h1>
+<p>You should be able to run the codes below in <code>R</code> to install all the packages needed in this workshop. If you encounter any problems. Please let one of the instructors know.</p>
 <pre class="r"><code>install.packages(c(&quot;BiocManager&quot;, &quot;devtools&quot;))
 BiocManager::install(c(&quot;scMerge&quot;, &quot;scran&quot;, &quot;scater&quot;, &quot;monocle&quot;, &quot;Rtsne&quot;, &quot;DropletUtils&quot;))
 devtools::install_github(&quot;SydneyBioX/scdney&quot;)</code></pre>
 <div id="for-mac-users" class="section level2">
 <h2>For Mac users</h2>
-<p>If you could not run <code>devtools::install_github("SydneyBioX/scdney")</code>, then please try the following code instead.</p>
-<pre class="r"><code>install.packages(&quot;https://github.com/SydneyBioX/SingleCellPlus/raw/master/scdney_mac_binary/scdney_0.1.2.tgz&quot;, repos = NULL)</code></pre>
+<p>If you could not run the last line of the above instructions (<code>devtools::install_github(&quot;SydneyBioX/scdney&quot;)</code>), then please try the following code instead.</p>
+<pre class="r"><code>install.packages(&quot;https://github.com/kevinwang09/SingleCellPlus/raw/master/scdney_mac_binary/scdney_0.1.2.tgz&quot;, repos = NULL)</code></pre>
 </div>
+</div>
+<div id="reference" class="section level1">
+<h1>Reference</h1>
 </div>
 
 
