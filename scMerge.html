@@ -433,30 +433,34 @@ div.tocify {
 </div>
 
 
-<div id="jeans-comments-to-be-resolved" class="section level1">
-<h1><span class="header-section-number">1</span> Jean’s comments (to be resolved)</h1>
-<ol style="list-style-type: decimal">
-<li><code>str</code> and <code>fct</code> manipulations as blackbox.</li>
-<li>Change “batch” into “data sources”/“datasets”</li>
-<li>Separate plotly plots into two</li>
-<li>Only keep Su and Yang.</li>
-<li>Dropping E10.5 and E16.5</li>
-</ol>
-</div>
 <div id="introduction" class="section level1">
-<h1><span class="header-section-number">2</span> Introduction</h1>
-<p>scMerge is a method developed by the Sydney Precision Bioinformatics Group. It aims to merge multiple scRNA-Seq data so that researchers can look for biological signals on data pooled from multiple sources. The key to achieving a good merge is to remove the <strong>noise</strong>.</p>
-<p>Here are some plots where the raw data is separated by the data-batches but not cell types.</p>
-<p>scMerge corrects data-batch separations by</p>
+<h1><span class="header-section-number">1</span> Introduction</h1>
+<p><code>scMerge</code> is a method developed by the Sydney Precision Bioinformatics Group. It aims to merge multiple scRNA-Seq data so that researchers can look for biological signals on data pooled from multiple data sources. The key to achieving a good merge is to remove the <strong>noise</strong> created by pooling data from multiple sources.</p>
+<p>There are two key steps in <code>scMerge</code>:</p>
 <ol style="list-style-type: decimal">
-<li>identifying cells of identical cell types and pooling these together</li>
-<li>identitying data-batch noises using Stably Expressed Genes (SEGs) and removing these from the data.</li>
+<li>identifying cells of similar cell types and pooling these cells together;</li>
+<li>using Stably Expressed Genes (SEGs) to identify the data noises and removing the noises from the data.</li>
 </ol>
-<p>Thus, scMerge can be thought of a two-step process!</p>
+<p>The ultimate result is a well-merged data where the cells are separated out by the biology but not the noise due to data sources.</p>
+</div>
+<div id="loading-in-the-packages" class="section level1">
+<h1><span class="header-section-number">2</span> Loading in the packages</h1>
 </div>
 <div id="supervised-scmerge" class="section level1">
 <h1><span class="header-section-number">3</span> Supervised scMerge</h1>
-<p>We will begin with a liver dataset. The data are stored as four separate RDS files (this is similar to a <code>RData</code> file, but only one data can be stored in each RDS file).</p>
+<pre class="r"><code>library(scMerge)
+library(scater)
+library(dplyr)
+library(gridExtra)
+library(forcats)
+library(dplyr)
+
+theme_set(theme_classic(16))</code></pre>
+</div>
+<div id="the-mouse-liver-data" class="section level1">
+<h1><span class="header-section-number">4</span> The mouse liver data</h1>
+<p>We will begin with merging two mouse liver datasets.</p>
+<p>This is perhaps a good place to clarify the terminology <strong>data sources</strong> and <strong>batch</strong>. In traditional transcriptomics analysis, the word <strong>batch</strong> means a large set of samples are processed by different technicians or sequenced on different dates etc. Our <code>scMerge</code> methodology not only corrects for the data noise created by this type of batches, but it can also correct for noises of unspecified origins e.g. noises created from multiple experiments with different biological questions in mind or noises from different protocols (see the table below). Hence, even though we may use these two terms interchangably, it is important to clarify that we are actually performing a more difficult task of merging from two different sources of data rather than simply correcting for batch effect within a single experiment.</p>
 <table style="width:100%;">
 <colgroup>
 <col width="5%" />
@@ -494,7 +498,7 @@ div.tocify {
 <td>Mouse</td>
 <td>Liver</td>
 <td>6</td>
-<td>1236</td>
+<td>389</td>
 <td>6</td>
 </tr>
 <tr class="even">
@@ -506,97 +510,152 @@ div.tocify {
 <td></td>
 <td></td>
 <td>2</td>
-<td></td>
+<td>448</td>
 <td>2</td>
-</tr>
-<tr class="odd">
-<td></td>
-<td>GSE87038</td>
-<td>Dong</td>
-<td>10.1186/s13059-018-1416-2</td>
-<td>STRT-seq</td>
-<td></td>
-<td></td>
-<td>4</td>
-<td></td>
-<td>3</td>
-</tr>
-<tr class="even">
-<td></td>
-<td>GSE96981</td>
-<td>Camp</td>
-<td>10.1038/nature22796</td>
-<td>SMARTer/C1</td>
-<td></td>
-<td></td>
-<td>3</td>
-<td></td>
-<td>3</td>
 </tr>
 </tbody>
 </table>
+<p>For the purpose of efficient data management, the bioinformatics community uses a <code>SingleCellExperiment</code> object to store single cell data. We have saved the Su and Yang data as two separate RDS files and we will read these data in first.</p>
 <pre class="r"><code>su = readRDS(&quot;data/sce_GSE87795.rds&quot;)
-yang = readRDS(&quot;data/sce_GSE90047.rds&quot;)
-# dong = readRDS(&quot;data/sce_GSE87038.rds&quot;)
-# camp = readRDS(&quot;data/sce_GSE96981.rds&quot;)
-sce_list = list(
+yang = readRDS(&quot;data/sce_GSE90047.rds&quot;)</code></pre>
+<div id="combing-the-data-into-a-singular-object" class="section level2">
+<h2><span class="header-section-number">4.1</span> Combing the data into a singular object</h2>
+<p>The <code>scMerge</code> package has a convenient function that combines multiple <code>SingleCellExperiment</code> objects into a single <code>SingleCellExperiment</code> object. We will first put the Su and Yang data into a <code>list</code> and then run the <code>sce_cbind</code> function from <code>scMerge</code>.</p>
+<pre class="r"><code>sce_list = list(
   su = su, 
   yang = yang
-  # dong = dong, 
-  # camp = camp
-)</code></pre>
-<pre class="r"><code>library(scMerge)
-library(scater)
-library(dplyr)
-library(gridExtra)
-library(plotly)
-library(stringr)
-library(forcats)
+)
 
-library(tibble)
-library(dplyr)
-
-theme_set(theme_classic(16)
-            # theme(legend.position = &quot;bottom&quot;)
-          )
-
-
-# purrr::map(sce_list, ~ colData(.x) %&gt;% colnames)
-
-sce_combine = scMerge::sce_cbind(sce_list = sce_list, 
+sce_list</code></pre>
+<pre><code>## $su
+## class: SingleCellExperiment 
+## dim: 23355 389 
+## metadata(1): log.exprs.offset
+## assays(3): counts log2cpm logcounts
+## rownames(23355): ENSMUSG00000104017 ENSMUSG00000102331 ...
+##   ERCC-00170 ERCC-00171
+## rowData names(9): is_feature_control is_feature_control_ERCC ...
+##   total_counts log10_total_counts
+## colnames(389): E11.5_C07 E11.5_C44 ... E16.5_2_C63 E16.5_2_C89
+## colData names(33): batch stage ... pct_counts_top_50_features_ERCC
+##   is_cell_control
+## reducedDimNames(0):
+## spikeNames(1): ERCC
+## 
+## $yang
+## class: SingleCellExperiment 
+## dim: 17215 448 
+## metadata(1): log.exprs.offset
+## assays(3): counts log2cpm logcounts
+## rownames(17215): ENSMUSG00000000001 ENSMUSG00000000028 ...
+##   ERCC-00170 ERCC-00171
+## rowData names(9): is_feature_control is_feature_control_ERCC ...
+##   total_counts log10_total_counts
+## colnames(448): E10.5D_1_01 E10.5D_1_02 ... E17.5E_4_16
+##   E17.5E_4_16.1
+## colData names(33): stage batch ... pct_counts_top_50_features_ERCC
+##   is_cell_control
+## reducedDimNames(0):
+## spikeNames(1): ERCC</code></pre>
+<pre class="r"><code>sce_combine = scMerge::sce_cbind(sce_list = sce_list, 
                                  method = &quot;union&quot;, 
-                                 colData_names = c(&quot;cellTypes&quot;, &quot;stage&quot;))
-
-
-cat(&quot;Please copy and paste this&quot;)</code></pre>
-<pre><code>## Please copy and paste this</code></pre>
-<pre class="r"><code># sce_combine = sce_combine[,stringr::str_detect(sce_combine$cellTypes, &quot;cholangiocyte|Epithelial Cell|hepatoblast|Hepatoblast|Mesenchymal Cell|Endothelial Cell|Hematopoietic|Immune cell|Stellate Cell&quot;)]
-
-colData(sce_combine)$cellTypes = forcats::fct_recode(
+                                 colData_names = c(&quot;cellTypes&quot;, &quot;stage&quot;),
+                                 batch_names = c(&quot;Su&quot;, &quot;Yang&quot;))</code></pre>
+<pre><code>## The assay named &#39;counts&#39; will be used to determine the proportion of zeroes for each batch</code></pre>
+<pre class="r"><code>sce_combine</code></pre>
+<pre><code>## class: SingleCellExperiment 
+## dim: 23801 837 
+## metadata(0):
+## assays(2): counts logcounts
+## rownames(23801): ENSMUSG00000104017 ENSMUSG00000102331 ...
+##   ERCC-00158 ERCC-00164
+## rowData names(0):
+## colnames(837): E11.5_C07 E11.5_C44 ... E17.5E_4_16 E17.5E_4_16.1
+## colData names(3): cellTypes stage batch
+## reducedDimNames(0):
+## spikeNames(0):</code></pre>
+</div>
+<div id="manipulating-a-singlecellexperiment-object" class="section level2">
+<h2><span class="header-section-number">4.2</span> Manipulating a <code>SingleCellExperiment</code> object</h2>
+<p>You can learn more about a <code>SingleCellExperiment</code> object here. In brief terms, in a <code>SingleCellExperiment</code> object, it stores three things:</p>
+<pre><code>+ `colData` which stores information about the cells
++ `rowData` which stores infornatin about the genes
++ `assayData` which stores a matrix of single cell expression data</code></pre>
+<p>In the Yang data, the cell type <code>Hepatoblast</code> is coded as <code>hepatoblast/hepatocyte</code>. In order to correct for this, we will briefly manipulate the <code>colData</code>. You do not need to know precise details of what is happening, please just copy and paste this code.</p>
+<pre class="r"><code>table(
   colData(sce_combine)$cellTypes, 
-  Hepatoblast = &quot;hepatoblast/hepatocyte&quot;
-  # Hepatoblast = &quot;Hepatoblasts&quot;
-) %&gt;% 
+  colData(sce_combine)$batch
+)</code></pre>
+<pre><code>##                         
+##                           Su Yang
+##   Endothelial Cell        52    0
+##   Erythrocyte            132    0
+##   Hepatoblast             49    0
+##   Macrophage              53    0
+##   Megakaryocyte           17    0
+##   Mesenchymal Cell        86    0
+##   cholangiocyte            0  103
+##   hepatoblast/hepatocyte   0  345</code></pre>
+<pre class="r"><code>colData(sce_combine)$cellTypes = colData(sce_combine)$cellTypes %&gt;% 
+  forcats::fct_recode(Hepatoblast = &quot;hepatoblast/hepatocyte&quot;) %&gt;% 
   droplevels()
 
 sce_combine = sce_combine[rowSums(SingleCellExperiment::counts(sce_combine)) != 0,
-                          colSums(SingleCellExperiment::counts(sce_combine)) != 0]</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-4-1.png" width="1152" /></p>
-<pre class="r"><code>pca_logcounts_cellTypes = scater::plotPCA(sce_combine, 
+                          colSums(SingleCellExperiment::counts(sce_combine)) != 0]
+
+table(
+  colData(sce_combine)$cellTypes, 
+  colData(sce_combine)$batch
+)</code></pre>
+<pre><code>##                   
+##                     Su Yang
+##   Endothelial Cell  52    0
+##   Erythrocyte      132    0
+##   Hepatoblast       49  345
+##   Macrophage        53    0
+##   Megakaryocyte     17    0
+##   Mesenchymal Cell  86    0
+##   cholangiocyte      0  103</code></pre>
+</div>
+<div id="visualisation-of-the-raw-data" class="section level2">
+<h2><span class="header-section-number">4.3</span> Visualisation of the raw data</h2>
+<p>There are three information about our cells in this data:</p>
+<pre><code>+ `cellTypes`: These are labelled cellTypes from the authors&#39; publications. We will treat these labels as the ground truth in this workshop.
++ `batch`: This is simply an indication of whether a cell was sourced from the Su or Yang dataset. 
++ `stage`: The day on which the cell was taken from the mouse. </code></pre>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-5-1.png" width="1152" /></p>
+<p>For a well-merged dataset, we should expect that the cells are grouped by the cell types rather than the batch/data sources. One way to check for this is via a PCA plot. The following code creates a PCA plot coloured by cell types and another coloured by batches. Pay special attention to the Hepatoblast cells (green in the left panel) since it is the only cell type that exists in both batches. Do you think the raw data is well-merged?</p>
+<pre class="r"><code>set.seed(1234)
+tsne_logcounts_cellTypes = scater::plotTSNE(sce_combine, 
                                           colour_by = &quot;cellTypes&quot;,
                                           run_args = list(exprs_values = &quot;logcounts&quot;)) +
   scale_fill_brewer(palette = &quot;Set1&quot;)
 
-pca_logcounts_batch = scater::plotPCA(sce_combine, 
+
+set.seed(1234)
+tsne_logcounts_batch = scater::plotTSNE(sce_combine, 
                                       colour_by = &quot;batch&quot;,
                                       run_args = list(exprs_values = &quot;logcounts&quot;)) +
   scale_fill_brewer(palette = &quot;Dark2&quot;)
 
-grid.arrange(pca_logcounts_cellTypes, pca_logcounts_batch, nrow = 1)</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-5-1.png" width="1152" /></p>
+grid.arrange(tsne_logcounts_cellTypes, tsne_logcounts_batch, nrow = 1)</code></pre>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-6-1.png" width="1152" /></p>
+</div>
+</div>
+<div id="supervised-scmerge-1" class="section level1">
+<h1><span class="header-section-number">5</span> Supervised <code>scMerge</code></h1>
+<p>We will begin running <code>scMerge</code> with a simple example.</p>
+<p>Remember that one of our evaluation metric is to bring the Hepatoblast cells from these two batches to be closer to each other. The way that <code>scMerge</code> achieves this is to consider cells that are similar to each other to be <strong>psuedo-replicates</strong> of each other. In our example, that means we should consider Hepatoblast cells from the Su dataset to be psuedo-replicates of the Hepatoblast cells in the Yang dataset. Once this is established, we can consider the noise that exists between these two Hepatoblast cell clusters to be the noise that we should remove from the data. This noise is estimated from the Stably Expressed Genes (SEGs), which are a list of genes that we have found to be highly expressed and stable across multiple datasets. Ultimately, we remove this noise component from the data and arrive at a merged dataset.</p>
+<p>Other inputs of the <code>scMerge</code> function include</p>
+<pre><code>+ `sce_combine`: is a `SingleCellExperiment` object containing a column `batch` in its colData
++ `ctl`: An index of stably expressed genes
++ `cell_type`: Cell type information
++ `replicate_prop`: What is the proportion of cells to be used for finding pseudo-replicates
++ `assay_name`: The name of the merged data when stored in the output `SingleCellExperiment`
++ `verbose`: whether intermediate messages should be printed out </code></pre>
 <pre class="r"><code>data(&quot;segList_ensemblGeneID&quot;, package = &quot;scMerge&quot;)
 
-scMerge_supervised &lt;- scMerge(
+scMerge_supervised = scMerge(
   sce_combine = sce_combine,
   ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
   cell_type = sce_combine$cellTypes,
@@ -612,6 +671,7 @@ scMerge_supervised &lt;- scMerge(
 ## [1] 837   7</code></pre>
 <pre><code>## Step 2: Performing RUV normalisation. This will take minutes to hours.</code></pre>
 <pre><code>## scMerge complete!</code></pre>
+<p>The output of the <code>scMerge</code> function is a <code>SingleCellExperiment</code> object with one extra assay, <code>scMerge_supervised</code>. And we can check the PCA visualisation to see if the merge is sensible.</p>
 <pre class="r"><code>scMerge_supervised</code></pre>
 <pre><code>## class: SingleCellExperiment 
 ## dim: 23801 837 
@@ -624,22 +684,28 @@ scMerge_supervised &lt;- scMerge(
 ## colData names(3): cellTypes stage batch
 ## reducedDimNames(0):
 ## spikeNames(0):</code></pre>
-<pre class="r"><code>pca_scMerge_supervised_cellTypes = scater::plotPCA(scMerge_supervised, 
+<pre class="r"><code>set.seed(1234)
+tsne_scMerge_supervised_cellTypes = scater::plotTSNE(scMerge_supervised, 
                                                    colour_by = &quot;cellTypes&quot;,
                                                    run_args = list(exprs_values = &quot;scMerge_supervised&quot;)) +
   scale_fill_brewer(palette = &quot;Set1&quot;)
 
-pca_scMerge_supervised_batch = scater::plotPCA(scMerge_supervised, 
+set.seed(1234)
+tsne_scMerge_supervised_batch = scater::plotTSNE(scMerge_supervised, 
                                                colour_by = &quot;batch&quot;,
                                                run_args = list(exprs_values = &quot;scMerge_supervised&quot;)) +
   scale_fill_brewer(palette = &quot;Dark2&quot;)
 
-grid.arrange(pca_scMerge_supervised_cellTypes, pca_scMerge_supervised_batch, nrow = 1)</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-7-1.png" width="1152" /></p>
+grid.arrange(tsne_scMerge_supervised_cellTypes, tsne_scMerge_supervised_batch, nrow = 1)</code></pre>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-8-1.png" width="1152" /></p>
 </div>
 <div id="unsupervised-scmerge" class="section level1">
-<h1><span class="header-section-number">4</span> Unsupervised scMerge</h1>
-<pre class="r"><code>scMerge_unsupervised &lt;- scMerge(
+<h1><span class="header-section-number">6</span> Unsupervised scMerge</h1>
+<p>What if we do not have access to the cell type information? Can we still perform <code>scMerge</code>?</p>
+<p>The answer is yes! In the absence of true cell type information, <code>scMerge</code> will perform clustering in the background to assigne the cells with cluster labels. These cluster labels closely mimicks the true cell type labels and a similar performance can be attained.</p>
+<p>Below is the code for the unsupervised version of <code>scMerge</code>. Instead of supplying the <code>cell_type</code> parameter, we will use the <code>kmeansK</code> parameter. The <code>kmeansK</code> parameter should be a vector that matches the number of batches in our <code>sce_combine</code> data (in this case, 2). The first number in <code>kmeansK</code> should be the number of expected cell types in the first batch (Su) and the second number should be the number of expected cell types in the second batch. In our case, we already know from the data table that there are 6 and 2 celltypes in the Su and Yang data respectively, hence we should specify <code>kmeansK = c(6, 2)</code>.</p>
+<p>Note: in the case that you do not know what is a good guess of number of cell types, you should specify a slightly higher number.</p>
+<pre class="r"><code>scMerge_unsupervised = scMerge(
   sce_combine = sce_combine,
   ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
   kmeansK = c(6, 2),
@@ -659,39 +725,54 @@ grid.arrange(pca_scMerge_supervised_cellTypes, pca_scMerge_supervised_batch, nro
 <pre><code>##   group batch cluster
 ## 1     2     1       1
 ## 2     3     1       2
-## 3     4     1       3
-## 4     5     1       4
-## 5     6     1       5
-## 6     1     1       6
+## 3     1     1       3
+## 4     4     1       4
+## 5     5     1       5
+## 6     6     1       6
 ## 7     7     2       1
 ## 8     1     2       2
 ## Dimension of the replicates mapping matrix: 
 ## [1] 837   7</code></pre>
 <pre><code>## Step 2: Performing RUV normalisation. This will take minutes to hours.</code></pre>
 <pre><code>## scMerge complete!</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-8-1.png" width="576" /></p>
-<pre class="r"><code>pca_scMerge_unsupervised_cellTypes = scater::plotPCA(scMerge_unsupervised, 
-                                                   colour_by = &quot;cellTypes&quot;,
-                                                   run_args = list(exprs_values = &quot;scMerge_unsupervised&quot;)) +
+<p><img src="scMerge_files/figure-html/unnamed-chunk-9-1.png" width="576" /></p>
+<pre class="r"><code>scMerge_unsupervised</code></pre>
+<pre><code>## class: SingleCellExperiment 
+## dim: 23801 837 
+## metadata(5): ruvK ruvK_optimal scRep_res timeReplicates timeRuv
+## assays(3): counts logcounts scMerge_unsupervised
+## rownames(23801): ENSMUSG00000104017 ENSMUSG00000102331 ...
+##   ERCC-00158 ERCC-00164
+## rowData names(0):
+## colnames(837): E11.5_C07 E11.5_C44 ... E17.5E_4_16 E17.5E_4_16.1
+## colData names(3): cellTypes stage batch
+## reducedDimNames(0):
+## spikeNames(0):</code></pre>
+<pre class="r"><code>set.seed(1234)
+tsne_scMerge_unsupervised_cellTypes = scater::plotTSNE(scMerge_unsupervised, 
+                                                     colour_by = &quot;cellTypes&quot;,
+                                                     run_args = list(exprs_values = &quot;scMerge_unsupervised&quot;)) +
   scale_fill_brewer(palette = &quot;Set1&quot;)
 
-pca_scMerge_unsupervised_batch = scater::plotPCA(scMerge_unsupervised, 
-                                               colour_by = &quot;batch&quot;,
-                                               run_args = list(exprs_values = &quot;scMerge_unsupervised&quot;)) +
+set.seed(1234)
+tsne_scMerge_unsupervised_batch = scater::plotTSNE(scMerge_unsupervised, 
+                                                 colour_by = &quot;batch&quot;,
+                                                 run_args = list(exprs_values = &quot;scMerge_unsupervised&quot;)) +
   scale_fill_brewer(palette = &quot;Dark2&quot;)
 
-grid.arrange(pca_scMerge_unsupervised_cellTypes, pca_scMerge_unsupervised_batch, nrow = 1)</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-9-1.png" width="1152" /></p>
+grid.arrange(tsne_scMerge_unsupervised_cellTypes, tsne_scMerge_unsupervised_batch, nrow = 1)</code></pre>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-10-1.png" width="1152" /></p>
 </div>
-<div id="semi-supervised-scmerge" class="section level1">
-<h1><span class="header-section-number">5</span> Semi-supervised scMerge</h1>
-<pre class="r"><code>scMerge_semisupervised &lt;- scMerge(
+<div id="extension-topics" class="section level1">
+<h1><span class="header-section-number">7</span> Extension topics</h1>
+<div id="semi-supervised-scmerge" class="section level2">
+<h2><span class="header-section-number">7.1</span> Semi-supervised scMerge</h2>
+<pre class="r"><code>scMerge_semisupervised = scMerge(
   sce_combine = sce_combine,
   ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
   kmeansK = c(6,2),
   replicate_prop = 1,
   WV = sce_combine$stage,
-  # WV_marker = c(&quot;Afp&quot;,&quot;Alb&quot;,&quot;Epcam&quot;),
   WV_marker = c(&quot;ENSMUSG00000045394&quot;,&quot;ENSMUSG00000054932&quot;,&quot;ENSMUSG00000045394&quot;),
   assay_name = &quot;scMerge_semisupervised&quot;,
   verbose = TRUE)</code></pre>
@@ -708,9 +789,9 @@ grid.arrange(pca_scMerge_unsupervised_cellTypes, pca_scMerge_unsupervised_batch,
 <pre><code>##   group batch cluster
 ## 1     2     1       1
 ## 2     3     1       2
-## 3     4     1       3
-## 4     5     1       4
-## 5     1     1       5
+## 3     1     1       3
+## 4     4     1       4
+## 5     5     1       5
 ## 6     6     1       6
 ## 7     7     2       1
 ## 8     1     2       2
@@ -719,136 +800,101 @@ grid.arrange(pca_scMerge_unsupervised_cellTypes, pca_scMerge_unsupervised_batch,
 ## [1] 837  18</code></pre>
 <pre><code>## Step 2: Performing RUV normalisation. This will take minutes to hours.</code></pre>
 <pre><code>## scMerge complete!</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-10-1.png" width="576" /></p>
-<pre class="r"><code>pca_scMerge_semisupervised_cellTypes = scater::plotPCA(scMerge_semisupervised, 
-                                                   colour_by = &quot;cellTypes&quot;,
-                                                   run_args = list(exprs_values = &quot;scMerge_semisupervised&quot;)) +
+<p><img src="scMerge_files/figure-html/unnamed-chunk-11-1.png" width="576" /></p>
+<pre class="r"><code>scMerge_semisupervised</code></pre>
+<pre><code>## class: SingleCellExperiment 
+## dim: 23801 837 
+## metadata(5): ruvK ruvK_optimal scRep_res timeReplicates timeRuv
+## assays(3): counts logcounts scMerge_semisupervised
+## rownames(23801): ENSMUSG00000104017 ENSMUSG00000102331 ...
+##   ERCC-00158 ERCC-00164
+## rowData names(0):
+## colnames(837): E11.5_C07 E11.5_C44 ... E17.5E_4_16 E17.5E_4_16.1
+## colData names(3): cellTypes stage batch
+## reducedDimNames(0):
+## spikeNames(0):</code></pre>
+<pre class="r"><code>set.seed(1234)
+tsne_scMerge_semisupervised_cellTypes = scater::plotTSNE(scMerge_semisupervised, 
+                                                       colour_by = &quot;cellTypes&quot;,
+                                                       run_args = list(exprs_values = &quot;scMerge_semisupervised&quot;)) +
   scale_fill_brewer(palette = &quot;Set1&quot;)
 
-pca_scMerge_semisupervised_batch = scater::plotPCA(scMerge_semisupervised, 
-                                               colour_by = &quot;batch&quot;,
-                                               run_args = list(exprs_values = &quot;scMerge_semisupervised&quot;)) +
+
+set.seed(1234)
+tsne_scMerge_semisupervised_batch = scater::plotTSNE(scMerge_semisupervised, 
+                                                   colour_by = &quot;batch&quot;,
+                                                   run_args = list(exprs_values = &quot;scMerge_semisupervised&quot;)) +
   scale_fill_brewer(palette = &quot;Dark2&quot;)
 
-grid.arrange(pca_scMerge_semisupervised_cellTypes, pca_scMerge_semisupervised_batch, nrow = 1)</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-11-1.png" width="1152" /></p>
-<pre class="r"><code>scater::plotExpression(scMerge_supervised[,scMerge_supervised$cellTypes == &quot;Hepatoblast&quot;],
-                       features = c(&quot;ENSMUSG00000045394&quot;,&quot;ENSMUSG00000054932&quot;,&quot;ENSMUSG00000045394&quot;),
-                       exprs_values = &quot;scMerge_supervised&quot;,
-                       colour_by = &quot;batch&quot;) +
-  labs(title = &quot;Expression of the WV marker genes for Hepatoblast only in supervied-scMerge&quot;)</code></pre>
+grid.arrange(tsne_scMerge_semisupervised_cellTypes, tsne_scMerge_semisupervised_batch, nrow = 1)</code></pre>
 <p><img src="scMerge_files/figure-html/unnamed-chunk-12-1.png" width="1152" /></p>
-<pre class="r"><code>scater::plotExpression(scMerge_unsupervised[,scMerge_unsupervised$cellTypes == &quot;Hepatoblast&quot;],
-                       features = c(&quot;ENSMUSG00000045394&quot;,&quot;ENSMUSG00000054932&quot;,&quot;ENSMUSG00000045394&quot;),
-                       exprs_values = &quot;scMerge_unsupervised&quot;,
-                       colour_by = &quot;batch&quot;) +
-  labs(title = &quot;Expression of the WV marker genes for Hepatoblast only in unsupervied-scMerge&quot;)</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-12-2.png" width="1152" /></p>
-<pre class="r"><code>scater::plotExpression(scMerge_semisupervised[,scMerge_semisupervised$cellTypes == &quot;Hepatoblast&quot;],
-                       features = c(&quot;ENSMUSG00000045394&quot;,&quot;ENSMUSG00000054932&quot;,&quot;ENSMUSG00000045394&quot;),
-                       exprs_values = &quot;scMerge_semisupervised&quot;,
-                       colour_by = &quot;batch&quot;) +
-  labs(title = &quot;Expression of the WV marker genes for Hepatoblast only in semisupervied-scMerge&quot;)</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-12-3.png" width="1152" /></p>
-<pre class="r"><code>sessionInfo()</code></pre>
-<pre><code>## R version 3.6.0 (2019-04-26)
-## Platform: x86_64-apple-darwin15.6.0 (64-bit)
-## Running under: macOS High Sierra 10.13.6
-## 
-## Matrix products: default
-## BLAS:   /Library/Frameworks/R.framework/Versions/3.6/Resources/lib/libRblas.0.dylib
-## LAPACK: /Library/Frameworks/R.framework/Versions/3.6/Resources/lib/libRlapack.dylib
-## 
-## locale:
-## [1] en_AU.UTF-8/en_AU.UTF-8/en_AU.UTF-8/C/en_AU.UTF-8/en_AU.UTF-8
-## 
-## attached base packages:
-## [1] parallel  stats4    stats     graphics  grDevices utils     datasets 
-## [8] methods   base     
-## 
-## other attached packages:
-##  [1] tibble_2.1.2                forcats_0.4.0              
-##  [3] stringr_1.4.0               plotly_4.9.0               
-##  [5] gridExtra_2.3               dplyr_0.8.1                
-##  [7] scater_1.12.2               ggplot2_3.1.1              
-##  [9] SingleCellExperiment_1.6.0  SummarizedExperiment_1.14.0
-## [11] DelayedArray_0.10.0         BiocParallel_1.18.0        
-## [13] matrixStats_0.54.0          Biobase_2.44.0             
-## [15] GenomicRanges_1.36.0        GenomeInfoDb_1.20.0        
-## [17] IRanges_2.18.1              S4Vectors_0.22.0           
-## [19] BiocGenerics_0.30.0         scMerge_1.1.2              
-## 
-## loaded via a namespace (and not attached):
-##  [1] nlme_3.1-140             bitops_1.0-6            
-##  [3] httr_1.4.0               RColorBrewer_1.1-2      
-##  [5] numDeriv_2016.8-1        tools_3.6.0             
-##  [7] backports_1.1.4          R6_2.4.0                
-##  [9] irlba_2.3.3              vipor_0.4.5             
-## [11] rpart_4.1-15             KernSmooth_2.23-15      
-## [13] Hmisc_4.2-0              lazyeval_0.2.2          
-## [15] mgcv_1.8-28              colorspace_1.4-1        
-## [17] nnet_7.3-12              withr_2.1.2             
-## [19] tidyselect_0.2.5         compiler_3.6.0          
-## [21] BiocNeighbors_1.2.0      htmlTable_1.13.1        
-## [23] labeling_0.3             caTools_1.17.1.2        
-## [25] scales_1.0.0             checkmate_1.9.3         
-## [27] proxy_0.4-23             digest_0.6.19           
-## [29] foreign_0.8-71           rmarkdown_1.13          
-## [31] XVector_0.24.0           base64enc_0.1-3         
-## [33] pkgconfig_2.0.2          htmltools_0.3.6         
-## [35] ruv_0.9.7                bbmle_1.0.20            
-## [37] htmlwidgets_1.3          rlang_0.3.4             
-## [39] rstudioapi_0.10          DelayedMatrixStats_1.6.0
-## [41] jsonlite_1.6             gtools_3.8.1            
-## [43] acepack_1.4.1            RCurl_1.95-4.12         
-## [45] magrittr_1.5             BiocSingular_1.0.0      
-## [47] GenomeInfoDbData_1.2.1   Formula_1.2-3           
-## [49] Matrix_1.2-17            ggbeeswarm_0.6.0        
-## [51] Rcpp_1.0.1               munsell_0.5.0           
-## [53] viridis_0.5.1            stringi_1.4.3           
-## [55] yaml_2.2.0               zlibbioc_1.30.0         
-## [57] gplots_3.0.1.1           plyr_1.8.4              
-## [59] grid_3.6.0               gdata_2.18.0            
-## [61] M3Drop_1.10.0            reldist_1.6-6           
-## [63] crayon_1.3.4             lattice_0.20-38         
-## [65] cowplot_0.9.4            splines_3.6.0           
-## [67] knitr_1.23               pillar_1.4.1            
-## [69] igraph_1.2.4.1           codetools_0.2-16        
-## [71] glue_1.3.1               evaluate_0.14           
-## [73] latticeExtra_0.6-28      data.table_1.12.2       
-## [75] foreach_1.4.4            tidyr_0.8.3             
-## [77] gtable_0.3.0             purrr_0.3.2             
-## [79] assertthat_0.2.1         xfun_0.7                
-## [81] rsvd_1.0.1               RcppEigen_0.3.3.5.0     
-## [83] viridisLite_0.3.0        survival_2.44-1.1       
-## [85] iterators_1.0.10         beeswarm_0.2.3          
-## [87] cluster_2.0.9            statmod_1.4.32</code></pre>
-<!-- # Extension: Speeding up the calculations -->
-<!-- ```{r, eval = FALSE} -->
-<!-- system.time( -->
-<!--   sce_fast <- scMerge( -->
-<!--     sce_combine = sce_combine, -->
-<!--     ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG), -->
-<!--     kmeansK = c(6,2,3,3), -->
-<!--     # exprs = "logcounts", -->
-<!--     # hvg_exprs = "counts", -->
-<!--     # marker = NULL, -->
-<!--     # ruvK = 20, -->
-<!--     # cell_type = sce_combine$cellTypes, -->
-<!--     # dist = "cor", -->
-<!--     replicate_prop = 1, -->
-<!--     WV = sce_combine$stage, -->
-<!--     # WV_marker = c("Afp","Alb","Epcam"), -->
-<!--     WV_marker = c("ENSMUSG00000045394","ENSMUSG00000054932","ENSMUSG00000045394"), -->
-<!--     # return_all_RUV = FALSE, -->
-<!--     assay_name = "scMerge_fast", -->
-<!--     verbose = TRUE, -->
-<!--     fast_svd = TRUE, rsvd_prop = 0.1) -->
-<!-- ) -->
-<!-- ``` -->
+</div>
+<div id="speeding-up-scmerge" class="section level2">
+<h2><span class="header-section-number">7.2</span> Speeding up scMerge</h2>
+<pre class="r"><code>scMerge_fast &lt;- scMerge(
+    sce_combine = sce_combine,
+    ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
+    kmeansK = c(6, 2),
+    replicate_prop = 1,
+    assay_name = &quot;scMerge_fast&quot;,
+    verbose = TRUE,
+    fast_svd = TRUE, 
+    rsvd_prop = 0.1)</code></pre>
+<pre><code>## Step 1: Computation will run in serial</code></pre>
+<pre><code>## Performing unsupervised scMerge with: 
+##  1. No cell type information 
+##  2. Cell type indices not revelant here 
+##  3. Mutual nearest neighbour matching 
+##  4. No supplied marker and no supplied marker_list for MNN clustering 
+##     Finding Highly Variable Genes for clustering 
+##     3650 HVG were found 
+##  5. PCA and Kmeans clustering will be performed on each batch 
+##  6. Create Mutual Nearest Clusters. Preview cells-cell_type matching output matrix:</code></pre>
+<pre><code>##   group batch cluster
+## 1     2     1       1
+## 2     3     1       2
+## 3     1     1       3
+## 4     4     1       4
+## 5     5     1       5
+## 6     6     1       6
+## 7     7     2       1
+## 8     1     2       2
+## Dimension of the replicates mapping matrix: 
+## [1] 837   7</code></pre>
+<pre><code>## Step 2: Performing RUV normalisation. This will take minutes to hours.</code></pre>
+<pre><code>## scMerge complete!</code></pre>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-13-1.png" width="1152" /></p>
+<pre class="r"><code>scMerge_fast</code></pre>
+<pre><code>## class: SingleCellExperiment 
+## dim: 23801 837 
+## metadata(5): ruvK ruvK_optimal scRep_res timeReplicates timeRuv
+## assays(3): counts logcounts scMerge_fast
+## rownames(23801): ENSMUSG00000104017 ENSMUSG00000102331 ...
+##   ERCC-00158 ERCC-00164
+## rowData names(0):
+## colnames(837): E11.5_C07 E11.5_C44 ... E17.5E_4_16 E17.5E_4_16.1
+## colData names(3): cellTypes stage batch
+## reducedDimNames(0):
+## spikeNames(0):</code></pre>
+<pre class="r"><code>set.seed(1234)
+tsne_scMerge_fast_cellTypes = scater::plotTSNE(scMerge_fast, 
+                                                       colour_by = &quot;cellTypes&quot;,
+                                                       run_args = list(exprs_values = &quot;scMerge_fast&quot;)) +
+  scale_fill_brewer(palette = &quot;Set1&quot;)
+
+
+set.seed(1234)
+tsne_scMerge_fast_batch = scater::plotTSNE(scMerge_fast, 
+                                                   colour_by = &quot;batch&quot;,
+                                                   run_args = list(exprs_values = &quot;scMerge_fast&quot;)) +
+  scale_fill_brewer(palette = &quot;Dark2&quot;)
+
+grid.arrange(tsne_scMerge_fast_cellTypes, tsne_scMerge_fast_batch, nrow = 1)</code></pre>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-14-1.png" width="1152" /></p>
+</div>
 </div>
 <div id="session-info" class="section level1">
-<h1><span class="header-section-number">6</span> Session Info</h1>
+<h1><span class="header-section-number">8</span> Session Info</h1>
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>## R version 3.6.0 (2019-04-26)
 ## Platform: x86_64-apple-darwin15.6.0 (64-bit)
@@ -866,46 +912,45 @@ grid.arrange(pca_scMerge_semisupervised_cellTypes, pca_scMerge_semisupervised_ba
 ## [8] methods   base     
 ## 
 ## other attached packages:
-##  [1] tibble_2.1.2                forcats_0.4.0              
-##  [3] stringr_1.4.0               plotly_4.9.0               
-##  [5] gridExtra_2.3               dplyr_0.8.1                
-##  [7] scater_1.12.2               ggplot2_3.1.1              
-##  [9] SingleCellExperiment_1.6.0  SummarizedExperiment_1.14.0
-## [11] DelayedArray_0.10.0         BiocParallel_1.18.0        
-## [13] matrixStats_0.54.0          Biobase_2.44.0             
-## [15] GenomicRanges_1.36.0        GenomeInfoDb_1.20.0        
-## [17] IRanges_2.18.1              S4Vectors_0.22.0           
-## [19] BiocGenerics_0.30.0         scMerge_1.1.2              
+##  [1] forcats_0.4.0               gridExtra_2.3              
+##  [3] dplyr_0.8.1                 scater_1.12.2              
+##  [5] ggplot2_3.1.1               SingleCellExperiment_1.6.0 
+##  [7] SummarizedExperiment_1.14.0 DelayedArray_0.10.0        
+##  [9] BiocParallel_1.18.0         matrixStats_0.54.0         
+## [11] Biobase_2.44.0              GenomicRanges_1.36.0       
+## [13] GenomeInfoDb_1.20.0         IRanges_2.18.1             
+## [15] S4Vectors_0.22.0            BiocGenerics_0.30.0        
+## [17] scMerge_1.1.2              
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] nlme_3.1-140             bitops_1.0-6            
-##  [3] httr_1.4.0               RColorBrewer_1.1-2      
-##  [5] numDeriv_2016.8-1        tools_3.6.0             
-##  [7] backports_1.1.4          R6_2.4.0                
-##  [9] irlba_2.3.3              vipor_0.4.5             
-## [11] rpart_4.1-15             KernSmooth_2.23-15      
-## [13] Hmisc_4.2-0              lazyeval_0.2.2          
-## [15] mgcv_1.8-28              colorspace_1.4-1        
-## [17] nnet_7.3-12              withr_2.1.2             
-## [19] tidyselect_0.2.5         compiler_3.6.0          
-## [21] BiocNeighbors_1.2.0      htmlTable_1.13.1        
-## [23] labeling_0.3             caTools_1.17.1.2        
-## [25] scales_1.0.0             checkmate_1.9.3         
-## [27] proxy_0.4-23             digest_0.6.19           
+##  [3] RColorBrewer_1.1-2       numDeriv_2016.8-1.1     
+##  [5] tools_3.6.0              backports_1.1.4         
+##  [7] R6_2.4.0                 irlba_2.3.3             
+##  [9] vipor_0.4.5              rpart_4.1-15            
+## [11] KernSmooth_2.23-15       Hmisc_4.2-0             
+## [13] lazyeval_0.2.2           mgcv_1.8-28             
+## [15] colorspace_1.4-1         nnet_7.3-12             
+## [17] withr_2.1.2              tidyselect_0.2.5        
+## [19] compiler_3.6.0           BiocNeighbors_1.2.0     
+## [21] htmlTable_1.13.1         labeling_0.3            
+## [23] caTools_1.17.1.2         scales_1.0.0            
+## [25] checkmate_1.9.3          proxy_0.4-23            
+## [27] stringr_1.4.0            digest_0.6.19           
 ## [29] foreign_0.8-71           rmarkdown_1.13          
 ## [31] XVector_0.24.0           base64enc_0.1-3         
 ## [33] pkgconfig_2.0.2          htmltools_0.3.6         
 ## [35] ruv_0.9.7                bbmle_1.0.20            
 ## [37] htmlwidgets_1.3          rlang_0.3.4             
 ## [39] rstudioapi_0.10          DelayedMatrixStats_1.6.0
-## [41] jsonlite_1.6             gtools_3.8.1            
-## [43] acepack_1.4.1            RCurl_1.95-4.12         
-## [45] magrittr_1.5             BiocSingular_1.0.0      
-## [47] GenomeInfoDbData_1.2.1   Formula_1.2-3           
-## [49] Matrix_1.2-17            ggbeeswarm_0.6.0        
-## [51] Rcpp_1.0.1               munsell_0.5.0           
-## [53] viridis_0.5.1            stringi_1.4.3           
-## [55] yaml_2.2.0               zlibbioc_1.30.0         
+## [41] gtools_3.8.1             acepack_1.4.1           
+## [43] BiocSingular_1.0.0       RCurl_1.95-4.12         
+## [45] magrittr_1.5             GenomeInfoDbData_1.2.1  
+## [47] Formula_1.2-3            Matrix_1.2-17           
+## [49] ggbeeswarm_0.6.0         Rcpp_1.0.1              
+## [51] munsell_0.5.0            viridis_0.5.1           
+## [53] stringi_1.4.3            yaml_2.2.0              
+## [55] zlibbioc_1.30.0          Rtsne_0.15              
 ## [57] gplots_3.0.1.1           plyr_1.8.4              
 ## [59] grid_3.6.0               gdata_2.18.0            
 ## [61] M3Drop_1.10.0            reldist_1.6-6           
@@ -920,10 +965,9 @@ grid.arrange(pca_scMerge_semisupervised_cellTypes, pca_scMerge_semisupervised_ba
 ## [79] assertthat_0.2.1         xfun_0.7                
 ## [81] rsvd_1.0.1               RcppEigen_0.3.3.5.0     
 ## [83] viridisLite_0.3.0        survival_2.44-1.1       
-## [85] iterators_1.0.10         beeswarm_0.2.3          
-## [87] cluster_2.0.9            statmod_1.4.32</code></pre>
-<pre class="r"><code>t2 - t1</code></pre>
-<pre><code>## Time difference of 1.53936 mins</code></pre>
+## [85] tibble_2.1.3             iterators_1.0.10        
+## [87] beeswarm_0.2.3           cluster_2.0.9           
+## [89] statmod_1.4.32</code></pre>
 </div>
 
 
