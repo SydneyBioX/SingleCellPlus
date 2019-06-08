@@ -296,6 +296,8 @@ scMerge_semisupervised = scMerge(
 ```
 
 
+### Visualisation of semi-supervised scMerge
+
 ```{r, fig.width=12, fig.height=6, message=FALSE}
 scMerge_semisupervised
 
@@ -314,6 +316,21 @@ tsne_scMerge_semisupervised_batch = scater::plotTSNE(scMerge_semisupervised,
   scale_fill_brewer(palette = "Dark2")
 
 grid.arrange(tsne_scMerge_semisupervised_cellTypes, tsne_scMerge_semisupervised_batch, nrow = 1)
+```
+
+```{r, fig.width=12, fig.height=6, message=FALSE}
+set.seed(1234)
+tsne_scMerge_unsupervised_hept = scater::plotTSNE(scMerge_unsupervised[, scMerge_unsupervised$cellTypes == "Hepatoblast"], 
+                                                       colour_by = "stage",
+                                                       run_args = list(exprs_values = "scMerge_unsupervised")) +
+  scale_fill_brewer(palette = "Set1")
+
+tsne_scMerge_semisupervised_hept = scater::plotTSNE(scMerge_semisupervised[, scMerge_semisupervised$cellTypes == "Hepatoblast"], 
+                                                       colour_by = "stage",
+                                                       run_args = list(exprs_values = "scMerge_semisupervised")) +
+  scale_fill_brewer(palette = "Set1")
+
+grid.arrange(tsne_scMerge_unsupervised_hept, tsne_scMerge_semisupervised_hept, nrow = 1)
 ```
 
 

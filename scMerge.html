@@ -801,6 +801,8 @@ grid.arrange(tsne_scMerge_unsupervised_cellTypes, tsne_scMerge_unsupervised_batc
 <pre><code>## Step 2: Performing RUV normalisation. This will take minutes to hours.</code></pre>
 <pre><code>## scMerge complete!</code></pre>
 <p><img src="scMerge_files/figure-html/unnamed-chunk-11-1.png" width="576" /></p>
+<div id="visualisation-of-semi-supervised-scmerge" class="section level3">
+<h3><span class="header-section-number">7.1.1</span> Visualisation of semi-supervised scMerge</h3>
 <pre class="r"><code>scMerge_semisupervised</code></pre>
 <pre><code>## class: SingleCellExperiment 
 ## dim: 23801 837 
@@ -828,6 +830,22 @@ tsne_scMerge_semisupervised_batch = scater::plotTSNE(scMerge_semisupervised,
 
 grid.arrange(tsne_scMerge_semisupervised_cellTypes, tsne_scMerge_semisupervised_batch, nrow = 1)</code></pre>
 <p><img src="scMerge_files/figure-html/unnamed-chunk-12-1.png" width="1152" /></p>
+<pre class="r"><code>set.seed(1234)
+tsne_scMerge_unsupervised_hept = scater::plotTSNE(scMerge_unsupervised[, scMerge_unsupervised$cellTypes == &quot;Hepatoblast&quot;], 
+                                                       colour_by = &quot;stage&quot;,
+                                                       run_args = list(exprs_values = &quot;scMerge_unsupervised&quot;)) +
+  scale_fill_brewer(palette = &quot;Set1&quot;)</code></pre>
+<pre><code>## Scale for &#39;fill&#39; is already present. Adding another scale for &#39;fill&#39;,
+## which will replace the existing scale.</code></pre>
+<pre class="r"><code>tsne_scMerge_semisupervised_hept = scater::plotTSNE(scMerge_semisupervised[, scMerge_semisupervised$cellTypes == &quot;Hepatoblast&quot;], 
+                                                       colour_by = &quot;stage&quot;,
+                                                       run_args = list(exprs_values = &quot;scMerge_semisupervised&quot;)) +
+  scale_fill_brewer(palette = &quot;Set1&quot;)</code></pre>
+<pre><code>## Scale for &#39;fill&#39; is already present. Adding another scale for &#39;fill&#39;,
+## which will replace the existing scale.</code></pre>
+<pre class="r"><code>grid.arrange(tsne_scMerge_unsupervised_hept, tsne_scMerge_semisupervised_hept, nrow = 1)</code></pre>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-13-1.png" width="1152" /></p>
+</div>
 </div>
 <div id="speeding-up-scmerge" class="section level2">
 <h2><span class="header-section-number">7.2</span> Speeding up scMerge</h2>
@@ -851,19 +869,19 @@ grid.arrange(tsne_scMerge_semisupervised_cellTypes, tsne_scMerge_semisupervised_
 ##  5. PCA and Kmeans clustering will be performed on each batch 
 ##  6. Create Mutual Nearest Clusters. Preview cells-cell_type matching output matrix:</code></pre>
 <pre><code>##   group batch cluster
-## 1     2     1       1
-## 2     3     1       2
-## 3     1     1       3
+## 1     1     1       1
+## 2     2     1       2
+## 3     3     1       3
 ## 4     4     1       4
 ## 5     5     1       5
 ## 6     6     1       6
-## 7     7     2       1
-## 8     1     2       2
+## 7     1     2       1
+## 8     7     2       2
 ## Dimension of the replicates mapping matrix: 
 ## [1] 837   7</code></pre>
 <pre><code>## Step 2: Performing RUV normalisation. This will take minutes to hours.</code></pre>
 <pre><code>## scMerge complete!</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-13-1.png" width="1152" /></p>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-14-1.png" width="1152" /></p>
 <pre class="r"><code>scMerge_fast</code></pre>
 <pre><code>## class: SingleCellExperiment 
 ## dim: 23801 837 
@@ -890,7 +908,7 @@ tsne_scMerge_fast_batch = scater::plotTSNE(scMerge_fast,
   scale_fill_brewer(palette = &quot;Dark2&quot;)
 
 grid.arrange(tsne_scMerge_fast_cellTypes, tsne_scMerge_fast_batch, nrow = 1)</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-14-1.png" width="1152" /></p>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-15-1.png" width="1152" /></p>
 </div>
 </div>
 <div id="session-info" class="section level1">
