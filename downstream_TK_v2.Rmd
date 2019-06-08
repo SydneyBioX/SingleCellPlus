@@ -1,8 +1,18 @@
 ---
 title: "Downstream analysis"
 author: "Sydney Precision Bioinformatics Group"
-date: "18 June 2019"
-output: html_document
+date: "03/05/2019"
+output:
+  html_document:
+    code_folding: hide
+    fig_height: 12
+    fig_width: 12
+    toc: yes
+    # number_sections: true
+    toc_depth: 3
+    toc_float: yes
+editor_options: 
+  chunk_output_type: console
 ---
 
 # Introduction
@@ -14,6 +24,15 @@ We have now preprocessed and merged our single cell data. The next step is to an
 3. [For a gene of interest, how can I visualise the gene expression distribution?](#q3)
 4. [What are the cell type composition in the data?](#q4)
 
+
+```{r}
+# This section is to install package that will be required to proceed with this section of the workshop.
+
+# If you do not have "devtools" installed, uncomment the following line and run on your console
+# install.packages("devtools")
+
+# devtools::install_github("SydneyBioX/scdney")
+```
 
 We will be using some of the functions we developed in our  `scdney` package. You may visit our package website for the vignette and further details about [`scdney`](https://sydneybiox.github.io/scdney/).
 
@@ -35,16 +54,11 @@ suppressPackageStartupMessages({
   library(ggpubr)
   library(plyr)
 })
-
-theme_set(theme_classic(16))
-
 # sce_scMerge = readRDS(file = "data/liver_scMerge_2019_May_29.RDS")
 # sce_scMerge = readRDS("~/Dropbox (Sydney Uni)/workdir/singleCell/workshop/data/liver_scMerge.rds")
 
 sce_scMerge = readRDS(paste(getwd(), "/data/liver_scMerge.rds",sep = ""))
 ```
-
-
 
 ```{r}
 # We will subset Su et al. and Yang et al. datasets.
@@ -58,8 +72,6 @@ mat = SummarizedExperiment::assay(sce_scMerge, "scMerge")[,ids]
 ```
 
 
-
-
 <a id="q1" />
 
 # Q1. What are the cell types present in the dataset?
@@ -70,38 +82,29 @@ Before we identify the cell types in the dataset, we need to first identify how 
 
 To optimise clustering method, algorithm and similarity metric are two key components that affects clustering performance. 
 
-In our recent study, we found Pearson correlation to be optimal similarity metric for comparing single cell RNA-seq data ( [*Kim et al., 2018*](https://academic.oup.com/bib/advance-article-abstract/doi/10.1093/bib/bby076/5077112?redirectedFrom=fulltext) ). Therefore in this workshop, we will utilise `scClust` in our `scdney` package, which implemented 2017 Nature methods clustering algorithm `SIMLR` with pearson correlation.
+In our recent study, we found pearson correlation to be optimal similarity metric for comparing single cell RNA-seq data ( [*Kim et al., 2018*](https://academic.oup.com/bib/advance-article-abstract/doi/10.1093/bib/bby076/5077112?redirectedFrom=fulltext) ). Therefore in this workshop, we will utilise `scClust` in our `scdney` package, which implemented 2017 Nature methods clustering algorithm `SIMLR` with pearson correlation.
 
 
 ## How many distinct group of population are there in my dataset?
 
-Typical clustering methods (except for some methods like hierarchical clustering) require users to specify number of distinct groups (`k`) to cluster from your data. 
-
-In an unsupervised setting, we do not know the exact number and therefore, in a practical setting, we should run clustering for various number of `k`. 
-
-**However**, due to the time limit of this workshop, we will only run clustering for `k = 6` only for demonstration.
-
-
-
-```{r, eval = FALSE}
-## We will NOT run for various `k` to save time. Instead, we will load pre-computed results for `k` between 3 to 8
-
-## This is an easy way to run `scClust` for k = 3, 4, 5, 6, 7, 8.
-
-all_k = 3:8
-simlr_results = sapply(as.character(all_k), function(k) {
-  scClust(mat, as.numeric(k), similarity = "pearson", method = "simlr", seed = 1, cores.ratio = 0, geneFilter = 0)
-}, USE.NAMES = TRUE, simplify = FALSE)
-
-
-```
-
+Typical clustering methods (except for some methods like hierarchical clustering) require users to specify number of distinct groups (`k`) to cluster from your data. In an unsupervised setting, we do not know the exact number and therefore we will run clustering for various number of `k`.
 
 ```{r, warning=FALSE}
-## For demonstration purpose, we will run k = 6 (which is actually the number of cell types in our dataset)
+# We will not run for various `k` to save time. Instead, we will load pre-computed results for `k` between 3 to 8
+
+# This is an easy way to run `scClust` for k = (3,4,5,6,7,8).
+# all_k = 3:8
+# simlr_results = sapply(as.character(all_k), function(k) {
+#   scClust(mat, as.numeric(k), similarity = "pearson", method = "simlr", seed = 1, cores.ratio = 0, geneFilter = 0)
+# }, USE.NAMES = TRUE, simplify = FALSE)
+
+# For demonstration purpose, we will run k = 6 (which is actually the number of cell types in our dataset)
 simlr_result_k6 = scClust(mat, 6, similarity = "pearson", method = "simlr", seed = 1, cores.ratio = 0, geneFilter = 0)
 
+# load("~/Dropbox (Sydney Uni)/workdir/singleCell/workshop/data/simlr_result_k6.RData")
+
 load(paste(getwd(), "/data/simlr.results.RData", sep = ""))
+
 ```
 
 
@@ -110,8 +113,6 @@ load(paste(getwd(), "/data/simlr.results.RData", sep = ""))
 ## How do we select optimal `k`?
 
 If our `k` is correct, we expect that the each clusters are closely packed together and the distance between the clusters, within-cluster sum of squares (WSS) are expected to be small. Thus, we will select the `k` with a small total WSS (compact clusters). This is called the "Elbow" method.
-
-
 
 ```{r}
 # Find total WSS from all cluster outputs
@@ -126,12 +127,11 @@ plt.dat = data.frame(
 
 ggplot(plt.dat, aes(x = as.numeric(as.character(k)), y = total_wss)) +
   geom_point(size = 3) +
-  stat_smooth(method = loess, col = "red", method.args = list(degree = 1), se = FALSE) +
+  stat_smooth(method = loess, col = "red", method.args = list(degree = 1)) +
   ylab("Total WSS") +
   ggtitle("Compare Total WSS for each 'k'")
 
 ```
-
 
 
 
@@ -148,7 +148,6 @@ As shown in this plot, the graph begin to plateau from `k` = 5. We can estimate 
 
 For the purpose of demonstration, we would like to highlight the effect of similarity metric to your cluster output.
 
-
 ```{r}
 # To run scClust with euclidean distance, uncommnet the following lines.
 # simlr_result_eucl_k6 = scClust(mat, 6, similarity = "euclidean", method = "simlr", seed = 1, cores.ratio = 0, geneFilter = 0)
@@ -156,7 +155,6 @@ For the purpose of demonstration, we would like to highlight the effect of simil
 # for convenience, we will load our pre-computed result
 load(paste(getwd(), "/data/simlr_result_eucl_k6.RData", sep = ""))
 ```
-
 
 
 ```{r, fig.width=10, fig.height=5}
@@ -192,8 +190,6 @@ ggplot(plt.dat, aes(x = tsne1, y = tsne2, colour = cluster, colors)) +
   theme(legend.position = "none")
   
 ```
-
-
 
 
 <h4> <span class="glyphicon glyphicon-education" aria-hidden="true"></span> Quick quiz </h4> 
