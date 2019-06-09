@@ -13,7 +13,7 @@
 
 <meta name="date" content="2019-06-18" />
 
-<title>scMerge package</title>
+<title>scMerge</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -268,7 +268,7 @@ $(document).ready(function () {
 </style>
 <script>
 $(document).ready(function () {
-  window.initializeCodeFolding("hide" === "show");
+  window.initializeCodeFolding("show" === "show");
 });
 </script>
 
@@ -426,7 +426,7 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">scMerge package</h1>
+<h1 class="title toc-ignore">scMerge</h1>
 <h4 class="author">Sydney Precision Bioinformatics Group</h4>
 <h4 class="date">18 June 2019</h4>
 
@@ -445,9 +445,6 @@ div.tocify {
 </div>
 <div id="loading-in-the-packages" class="section level1">
 <h1><span class="header-section-number">2</span> Loading in the packages</h1>
-</div>
-<div id="supervised-scmerge" class="section level1">
-<h1><span class="header-section-number">3</span> Supervised scMerge</h1>
 <pre class="r"><code>library(scMerge)
 library(scater)
 library(dplyr)
@@ -458,7 +455,7 @@ library(dplyr)
 theme_set(theme_classic(16))</code></pre>
 </div>
 <div id="the-mouse-liver-data" class="section level1">
-<h1><span class="header-section-number">4</span> The mouse liver data</h1>
+<h1><span class="header-section-number">3</span> The mouse liver data</h1>
 <p>We will begin with merging two mouse liver datasets.</p>
 <p>This is perhaps a good place to clarify the terminology <strong>data sources</strong> and <strong>batch</strong>. In traditional transcriptomics analysis, the word <strong>batch</strong> means a large set of samples are processed by different technicians or sequenced on different dates etc. Our <code>scMerge</code> methodology not only corrects for the data noise created by this type of batches, but it can also correct for noises of unspecified origins e.g. noises created from multiple experiments with different biological questions in mind or noises from different protocols (see the table below). Hence, even though we may use these two terms interchangably, it is important to clarify that we are actually performing a more difficult task of merging from two different sources of data rather than simply correcting for batch effect within a single experiment.</p>
 <table style="width:100%;">
@@ -519,7 +516,7 @@ theme_set(theme_classic(16))</code></pre>
 <pre class="r"><code>su = readRDS(&quot;data/sce_GSE87795.rds&quot;)
 yang = readRDS(&quot;data/sce_GSE90047.rds&quot;)</code></pre>
 <div id="combing-the-data-into-a-singular-object" class="section level2">
-<h2><span class="header-section-number">4.1</span> Combing the data into a singular object</h2>
+<h2><span class="header-section-number">3.1</span> Combing the data into a singular object</h2>
 <p>The <code>scMerge</code> package has a convenient function that combines multiple <code>SingleCellExperiment</code> objects into a single <code>SingleCellExperiment</code> object. We will first put the Su and Yang data into a <code>list</code> and then run the <code>sce_cbind</code> function from <code>scMerge</code>.</p>
 <pre class="r"><code>sce_list = list(
   su = su, 
@@ -576,11 +573,13 @@ sce_list</code></pre>
 ## spikeNames(0):</code></pre>
 </div>
 <div id="manipulating-a-singlecellexperiment-object" class="section level2">
-<h2><span class="header-section-number">4.2</span> Manipulating a <code>SingleCellExperiment</code> object</h2>
+<h2><span class="header-section-number">3.2</span> Manipulating a <code>SingleCellExperiment</code> object</h2>
 <p>You can learn more about a <code>SingleCellExperiment</code> object here. In brief terms, in a <code>SingleCellExperiment</code> object, it stores three things:</p>
-<pre><code>+ `colData` which stores information about the cells
-+ `rowData` which stores infornatin about the genes
-+ `assayData` which stores a matrix of single cell expression data</code></pre>
+<ul>
+<li><code>colData</code> which stores information about the cells</li>
+<li><code>rowData</code> which stores infornatin about the genes</li>
+<li><code>assayData</code> which stores a matrix of single cell expression data</li>
+</ul>
 <p>In the Yang data, the cell type <code>Hepatoblast</code> is coded as <code>hepatoblast/hepatocyte</code>. In order to correct for this, we will briefly manipulate the <code>colData</code>. You do not need to know precise details of what is happening, please just copy and paste this code.</p>
 <pre class="r"><code>table(
   colData(sce_combine)$cellTypes, 
@@ -618,11 +617,13 @@ table(
 ##   cholangiocyte      0  103</code></pre>
 </div>
 <div id="visualisation-of-the-raw-data" class="section level2">
-<h2><span class="header-section-number">4.3</span> Visualisation of the raw data</h2>
+<h2><span class="header-section-number">3.3</span> Visualisation of the raw data</h2>
 <p>There are three information about our cells in this data:</p>
-<pre><code>+ `cellTypes`: These are labelled cellTypes from the authors&#39; publications. We will treat these labels as the ground truth in this workshop.
-+ `batch`: This is simply an indication of whether a cell was sourced from the Su or Yang dataset. 
-+ `stage`: The day on which the cell was taken from the mouse. </code></pre>
+<ul>
+<li><code>cellTypes</code>: These are labelled cellTypes from the authors’ publications. We will treat these labels as the ground truth in this workshop.</li>
+<li><code>batch</code>: This is simply an indication of whether a cell was sourced from the Su or Yang dataset.</li>
+<li><code>stage</code>: The day on which the cell was taken from the mouse.</li>
+</ul>
 <p><img src="scMerge_files/figure-html/unnamed-chunk-5-1.png" width="1152" /></p>
 <p>For a well-merged dataset, we should expect that the cells are grouped by the cell types rather than the batch/data sources. One way to check for this is via a PCA plot. The following code creates a PCA plot coloured by cell types and another coloured by batches. Pay special attention to the Hepatoblast cells (green in the left panel) since it is the only cell type that exists in both batches. Do you think the raw data is well-merged?</p>
 <pre class="r"><code>set.seed(1234)
@@ -642,17 +643,19 @@ grid.arrange(tsne_logcounts_cellTypes, tsne_logcounts_batch, nrow = 1)</code></p
 <p><img src="scMerge_files/figure-html/unnamed-chunk-6-1.png" width="1152" /></p>
 </div>
 </div>
-<div id="supervised-scmerge-1" class="section level1">
-<h1><span class="header-section-number">5</span> Supervised <code>scMerge</code></h1>
+<div id="supervised-scmerge" class="section level1">
+<h1><span class="header-section-number">4</span> Supervised <code>scMerge</code></h1>
 <p>We will begin running <code>scMerge</code> with a simple example.</p>
-<p>Remember that one of our evaluation metric is to bring the Hepatoblast cells from these two batches to be closer to each other. The way that <code>scMerge</code> achieves this is to consider cells that are similar to each other to be <strong>psuedo-replicates</strong> of each other. In our example, that means we should consider Hepatoblast cells from the Su dataset to be psuedo-replicates of the Hepatoblast cells in the Yang dataset. Once this is established, we can consider the noise that exists between these two Hepatoblast cell clusters to be the noise that we should remove from the data. This noise is estimated from the Stably Expressed Genes (SEGs), which are a list of genes that we have found to be highly expressed and stable across multiple datasets. Ultimately, we remove this noise component from the data and arrive at a merged dataset.</p>
+<p>Remember that one of our evaluation metric is to bring the Hepatoblast cells from these two batches to be closer to each other. The way that <code>scMerge</code> achieves this is to consider cells that are similar to each other to be <strong>pseudo-replicates</strong> of each other. In our example, that means we should consider Hepatoblast cells from the Su dataset to be pseudo-replicates of the Hepatoblast cells in the Yang dataset. Once this is established, we can consider the noise that exists between these two groups of Hepatoblast cells to be the noise that we should remove from the data. This noise is estimated from the Stably Expressed Genes (SEGs), which is a list of genes that we have found to be highly expressed and stable across multiple datasets. Ultimately, we remove this noise component from the data and arrive at a merged dataset.</p>
 <p>Other inputs of the <code>scMerge</code> function include</p>
-<pre><code>+ `sce_combine`: is a `SingleCellExperiment` object containing a column `batch` in its colData
-+ `ctl`: An index of stably expressed genes
-+ `cell_type`: Cell type information
-+ `replicate_prop`: What is the proportion of cells to be used for finding pseudo-replicates
-+ `assay_name`: The name of the merged data when stored in the output `SingleCellExperiment`
-+ `verbose`: whether intermediate messages should be printed out </code></pre>
+<ul>
+<li><code>sce_combine</code>: is a <code>SingleCellExperiment</code> object containing a column <code>batch</code> in its colData</li>
+<li><code>ctl</code>: An index of stably expressed genes</li>
+<li><code>cell_type</code>: Cell type information</li>
+<li><code>replicate_prop</code>: What is the proportion of cells to be used for finding pseudo-replicates</li>
+<li><code>assay_name</code>: The name of the merged data when stored in the output <code>SingleCellExperiment</code></li>
+<li><code>verbose</code>: whether intermediate messages should be printed out</li>
+</ul>
 <pre class="r"><code>data(&quot;segList_ensemblGeneID&quot;, package = &quot;scMerge&quot;)
 
 scMerge_supervised = scMerge(
@@ -700,9 +703,9 @@ grid.arrange(tsne_scMerge_supervised_cellTypes, tsne_scMerge_supervised_batch, n
 <p><img src="scMerge_files/figure-html/unnamed-chunk-8-1.png" width="1152" /></p>
 </div>
 <div id="unsupervised-scmerge" class="section level1">
-<h1><span class="header-section-number">6</span> Unsupervised scMerge</h1>
+<h1><span class="header-section-number">5</span> Unsupervised scMerge</h1>
 <p>What if we do not have access to the cell type information? Can we still perform <code>scMerge</code>?</p>
-<p>The answer is yes! In the absence of true cell type information, <code>scMerge</code> will perform clustering in the background to assigne the cells with cluster labels. These cluster labels closely mimicks the true cell type labels and a similar performance can be attained.</p>
+<p>The answer is yes! In the absence of true cell type information, <code>scMerge</code> will perform clustering in the background to assign the cells with cluster labels. These cluster labels closely mimick the true cell type labels and a similar merge performance can be attained.</p>
 <p>Below is the code for the unsupervised version of <code>scMerge</code>. Instead of supplying the <code>cell_type</code> parameter, we will use the <code>kmeansK</code> parameter. The <code>kmeansK</code> parameter should be a vector that matches the number of batches in our <code>sce_combine</code> data (in this case, 2). The first number in <code>kmeansK</code> should be the number of expected cell types in the first batch (Su) and the second number should be the number of expected cell types in the second batch. In our case, we already know from the data table that there are 6 and 2 celltypes in the Su and Yang data respectively, hence we should specify <code>kmeansK = c(6, 2)</code>.</p>
 <p>Note: in the case that you do not know what is a good guess of number of cell types, you should specify a slightly higher number.</p>
 <pre class="r"><code>scMerge_unsupervised = scMerge(
@@ -735,7 +738,7 @@ grid.arrange(tsne_scMerge_supervised_cellTypes, tsne_scMerge_supervised_batch, n
 ## [1] 837   7</code></pre>
 <pre><code>## Step 2: Performing RUV normalisation. This will take minutes to hours.</code></pre>
 <pre><code>## scMerge complete!</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-9-1.png" width="576" /></p>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-9-1.png" width="480" /></p>
 <pre class="r"><code>scMerge_unsupervised</code></pre>
 <pre><code>## class: SingleCellExperiment 
 ## dim: 23801 837 
@@ -764,13 +767,15 @@ grid.arrange(tsne_scMerge_unsupervised_cellTypes, tsne_scMerge_unsupervised_batc
 <p><img src="scMerge_files/figure-html/unnamed-chunk-10-1.png" width="1152" /></p>
 </div>
 <div id="extension-topics" class="section level1">
-<h1><span class="header-section-number">7</span> Extension topics</h1>
+<h1><span class="header-section-number">6</span> Extension topics</h1>
 <div id="semi-supervised-scmerge" class="section level2">
-<h2><span class="header-section-number">7.1</span> Semi-supervised scMerge</h2>
+<h2><span class="header-section-number">6.1</span> Semi-supervised scMerge</h2>
+<p>In any dataset, it is always a challenge to know what is the biological signal and what is noise. For example, in the context of this mouse liver data, we considered the variations between the Hepatoblast cells between the two batches as noise we wish to remove. However, we also know that these cells were sampled from different embryonic time points, so the variations between cells at different time points should be a biological signal that we would like to retain. In other words, we should consider cells of different cell types at different time points as pseudo-replicates.</p>
+<p>In <code>scMerge</code>, we say that the time points information is the “wanted variation” and this is achieved through the <code>WV</code> parameter. In addition, we can also supply known development markers to guide the retention of the time point signals. We call this the “semi-supervised” version of <code>scMerge</code>, since it uses some parts of the label information.</p>
 <pre class="r"><code>scMerge_semisupervised = scMerge(
   sce_combine = sce_combine,
   ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
-  kmeansK = c(6,2),
+  kmeansK = c(6, 2),
   replicate_prop = 1,
   WV = sce_combine$stage,
   WV_marker = c(&quot;ENSMUSG00000045394&quot;,&quot;ENSMUSG00000054932&quot;,&quot;ENSMUSG00000045394&quot;),
@@ -800,9 +805,9 @@ grid.arrange(tsne_scMerge_unsupervised_cellTypes, tsne_scMerge_unsupervised_batc
 ## [1] 837  18</code></pre>
 <pre><code>## Step 2: Performing RUV normalisation. This will take minutes to hours.</code></pre>
 <pre><code>## scMerge complete!</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-11-1.png" width="576" /></p>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-11-1.png" width="480" /></p>
 <div id="visualisation-of-semi-supervised-scmerge" class="section level3">
-<h3><span class="header-section-number">7.1.1</span> Visualisation of semi-supervised scMerge</h3>
+<h3><span class="header-section-number">6.1.1</span> Visualisation of semi-supervised scMerge</h3>
 <pre class="r"><code>scMerge_semisupervised</code></pre>
 <pre><code>## class: SingleCellExperiment 
 ## dim: 23801 837 
@@ -830,89 +835,54 @@ tsne_scMerge_semisupervised_batch = scater::plotTSNE(scMerge_semisupervised,
 
 grid.arrange(tsne_scMerge_semisupervised_cellTypes, tsne_scMerge_semisupervised_batch, nrow = 1)</code></pre>
 <p><img src="scMerge_files/figure-html/unnamed-chunk-12-1.png" width="1152" /></p>
+<p>We will now visualise the Hepatoblast cells in the unsupervised scMerge result and then in the semi-supervised scMerge result. We will again use the tSNE plot, but this time, we will highlight the time point information. Notice that in the unsupervised scMerge result (left panel), <code>scMerge</code> removed the time points variations because we didn’t tell it that this is biological variations that we wish to retain.</p>
 <pre class="r"><code>set.seed(1234)
 tsne_scMerge_unsupervised_hept = scater::plotTSNE(scMerge_unsupervised[, scMerge_unsupervised$cellTypes == &quot;Hepatoblast&quot;], 
                                                        colour_by = &quot;stage&quot;,
                                                        run_args = list(exprs_values = &quot;scMerge_unsupervised&quot;)) +
-  scale_fill_brewer(palette = &quot;Set1&quot;)</code></pre>
-<pre><code>## Scale for &#39;fill&#39; is already present. Adding another scale for &#39;fill&#39;,
-## which will replace the existing scale.</code></pre>
-<pre class="r"><code>tsne_scMerge_semisupervised_hept = scater::plotTSNE(scMerge_semisupervised[, scMerge_semisupervised$cellTypes == &quot;Hepatoblast&quot;], 
+  scale_fill_brewer(palette = &quot;Set1&quot;)
+
+tsne_scMerge_semisupervised_hept = scater::plotTSNE(scMerge_semisupervised[, scMerge_semisupervised$cellTypes == &quot;Hepatoblast&quot;], 
                                                        colour_by = &quot;stage&quot;,
                                                        run_args = list(exprs_values = &quot;scMerge_semisupervised&quot;)) +
-  scale_fill_brewer(palette = &quot;Set1&quot;)</code></pre>
-<pre><code>## Scale for &#39;fill&#39; is already present. Adding another scale for &#39;fill&#39;,
-## which will replace the existing scale.</code></pre>
-<pre class="r"><code>grid.arrange(tsne_scMerge_unsupervised_hept, tsne_scMerge_semisupervised_hept, nrow = 1)</code></pre>
+  scale_fill_brewer(palette = &quot;Set1&quot;)
+
+grid.arrange(tsne_scMerge_unsupervised_hept, tsne_scMerge_semisupervised_hept, nrow = 1)</code></pre>
 <p><img src="scMerge_files/figure-html/unnamed-chunk-13-1.png" width="1152" /></p>
 </div>
 </div>
 <div id="speeding-up-scmerge" class="section level2">
-<h2><span class="header-section-number">7.2</span> Speeding up scMerge</h2>
+<h2><span class="header-section-number">6.2</span> Speeding up scMerge</h2>
+<p>The second component of scMerge contains some intense computations. For a large dataset, this component is slow. In order to fix this, we have implemented fast computational approximations for this component. While the output is only an approximation, it is usually numerically similar to a full run of scMerge and it can be up to 10 times faster for a large dataset.</p>
 <pre class="r"><code>scMerge_fast &lt;- scMerge(
-    sce_combine = sce_combine,
-    ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
-    kmeansK = c(6, 2),
-    replicate_prop = 1,
-    assay_name = &quot;scMerge_fast&quot;,
-    verbose = TRUE,
-    fast_svd = TRUE, 
-    rsvd_prop = 0.1)</code></pre>
-<pre><code>## Step 1: Computation will run in serial</code></pre>
-<pre><code>## Performing unsupervised scMerge with: 
-##  1. No cell type information 
-##  2. Cell type indices not revelant here 
-##  3. Mutual nearest neighbour matching 
-##  4. No supplied marker and no supplied marker_list for MNN clustering 
-##     Finding Highly Variable Genes for clustering 
-##     3650 HVG were found 
-##  5. PCA and Kmeans clustering will be performed on each batch 
-##  6. Create Mutual Nearest Clusters. Preview cells-cell_type matching output matrix:</code></pre>
-<pre><code>##   group batch cluster
-## 1     1     1       1
-## 2     2     1       2
-## 3     3     1       3
-## 4     4     1       4
-## 5     5     1       5
-## 6     6     1       6
-## 7     1     2       1
-## 8     7     2       2
-## Dimension of the replicates mapping matrix: 
-## [1] 837   7</code></pre>
-<pre><code>## Step 2: Performing RUV normalisation. This will take minutes to hours.</code></pre>
-<pre><code>## scMerge complete!</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-14-1.png" width="1152" /></p>
-<pre class="r"><code>scMerge_fast</code></pre>
-<pre><code>## class: SingleCellExperiment 
-## dim: 23801 837 
-## metadata(5): ruvK ruvK_optimal scRep_res timeReplicates timeRuv
-## assays(3): counts logcounts scMerge_fast
-## rownames(23801): ENSMUSG00000104017 ENSMUSG00000102331 ...
-##   ERCC-00158 ERCC-00164
-## rowData names(0):
-## colnames(837): E11.5_C07 E11.5_C44 ... E17.5E_4_16 E17.5E_4_16.1
-## colData names(3): cellTypes stage batch
-## reducedDimNames(0):
-## spikeNames(0):</code></pre>
-<pre class="r"><code>set.seed(1234)
+  sce_combine = sce_combine,
+  ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG),
+  cell_type = sce_combine$cellTypes,
+  replicate_prop = 1,
+  assay_name = &quot;scMerge_supervised&quot;,
+  verbose = TRUE,
+  fast_svd = TRUE, 
+  rsvd_prop = 0.1)</code></pre>
+<pre class="r"><code>scMerge_fast
+
+set.seed(1234)
 tsne_scMerge_fast_cellTypes = scater::plotTSNE(scMerge_fast, 
-                                                       colour_by = &quot;cellTypes&quot;,
-                                                       run_args = list(exprs_values = &quot;scMerge_fast&quot;)) +
+                                               colour_by = &quot;cellTypes&quot;,
+                                               run_args = list(exprs_values = &quot;scMerge_fast&quot;)) +
   scale_fill_brewer(palette = &quot;Set1&quot;)
 
 
 set.seed(1234)
 tsne_scMerge_fast_batch = scater::plotTSNE(scMerge_fast, 
-                                                   colour_by = &quot;batch&quot;,
-                                                   run_args = list(exprs_values = &quot;scMerge_fast&quot;)) +
+                                           colour_by = &quot;batch&quot;,
+                                           run_args = list(exprs_values = &quot;scMerge_fast&quot;)) +
   scale_fill_brewer(palette = &quot;Dark2&quot;)
 
 grid.arrange(tsne_scMerge_fast_cellTypes, tsne_scMerge_fast_batch, nrow = 1)</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-15-1.png" width="1152" /></p>
 </div>
 </div>
 <div id="session-info" class="section level1">
-<h1><span class="header-section-number">8</span> Session Info</h1>
+<h1><span class="header-section-number">7</span> Session Info</h1>
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>## R version 3.6.0 (2019-04-26)
 ## Platform: x86_64-apple-darwin15.6.0 (64-bit)
