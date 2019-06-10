@@ -1,6 +1,13 @@
-language: r
-dist: xenial
+language: R
+cache: packages
+R: bioc-devel
+dist: trusty
 latex: false
+os:
+  - linux
+  
+env:
+  - R_BIOC_VERSION: "3.10"
 
 branches:
   only:
