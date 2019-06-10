@@ -43,7 +43,7 @@ BiocManager::install(c("devtools", "DropletUtils", "edgeR",
                        "plyr", "Rtsne", 
                        "scales", "scater", 
                        "scran", "tidyverse", "viridis",
-                       "DescTools", "amap", "doParallel", "ggridges", "lme4", "mice", "methods"
+                       "DescTools", "amap", "doParallel", "ggridges", "lme4", "mice", "methods", "caret", "randomForest"
                        ))
 devtools::install_github("SydneyBioX/scdney")
 ```
