@@ -530,7 +530,7 @@ ggplot(plot_data,
 <ul>
 <li>Clustering result using Pearson correlation</li>
 <li>Clustering result using Euclidean distance</li>
-<li>True cell type labels from the publication</li>
+<li>True cell type labels from the publications</li>
 </ul>
 <pre class="r"><code>## To run scClust with euclidean distance, uncommnet the following lines.
 ## simlr_result_eucl_k6 = scClust(mat, 6, similarity = &quot;euclidean&quot;, method = &quot;simlr&quot;, seed = 1, cores.ratio = 0, geneFilter = 0)
@@ -573,7 +573,7 @@ ggplot(plot_data, aes(x = tsne1, y = tsne2, colour = cluster)) +
 <ol style="list-style-type: decimal">
 <li>From your observation of the above t-SNE plot, did our clustering method (with Pearson correlation) group cells well?</li>
 </ol>
-<p><strong>[Optional]</strong> We can evaluate the clustering performance using the cell type labels providede from the publication.</p>
+<p><strong>[Optional]</strong> We can evaluate the clustering performance using the cell type labels providede from the publications.</p>
 <pre class="r"><code># ARI
 ari = c(mclust::adjustedRandIndex(lab, simlr_result_eucl_k6$y$cluster),
         mclust::adjustedRandIndex(lab, simlr_result_k6$y$cluster))
@@ -687,11 +687,10 @@ ggplot(data = tsne_plotdf, aes(x = tsne1, y = tsne2, colour = Gys2) ) +
 <h4>
 <span class="glyphicon glyphicon-education" aria-hidden="true"></span> Quick quiz
 </h4>
-<p>What does the above t-SNE plot tell you?</p>
-<h4>
-<span class="glyphicon glyphicon-education" aria-hidden="true"></span> Quick quiz
-</h4>
-<p>Here we repeat the analysis as above, but for cluster 3. See if you can understand the output.</p>
+<ol style="list-style-type: decimal">
+<li><p>What does the above t-SNE plot tell you?</p></li>
+<li><p>Here we repeat the analysis as above, but for cluster 3. See if you can understand the output.</p></li>
+</ol>
 <pre class="r"><code>marker_cluster3 = readRDS(&quot;data/marker_cluster3.rds&quot;)</code></pre>
 <pre class="r"><code>tsne_plotdf = tsne_plotdf %&gt;% 
   dplyr::mutate(Erich5 = mat[&quot;Erich5&quot;,])
@@ -764,7 +763,7 @@ ggarrange(fig1,fig2, ncol= 2, nrow = 1)</code></pre>
 </div>
 <div id="q4" class="section level1">
 <h1><span class="header-section-number">5</span> Q4. What are the cell type composition in the data?</h1>
-<p><strong>NOTE:</strong> From this step, we will assume we have correctly refined our cell type information from above steps and we will use the cell type information provided in the Su et. al. 2017 publication.</p>
+<p><strong>NOTE:</strong> From this step, we will assume we have correctly refined our cell type information from above steps and we will use the cell type information provided in Su et. al. 2017 and Yang et. al. 2017.</p>
 <div id="cell-type-proportions" class="section level2">
 <h2><span class="header-section-number">5.1</span> Cell type proportions</h2>
 <pre class="r"><code>plot_data = data.frame(table(lab)) %&gt;% 

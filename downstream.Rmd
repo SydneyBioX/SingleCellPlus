@@ -172,7 +172,7 @@ For the purpose of demonstration, we would like to highlight the effect of simil
 
   + Clustering result using Pearson correlation
   + Clustering result using Euclidean distance
-  + True cell type labels from the publication
+  + True cell type labels from the publications
 
 
 ```{r}
@@ -225,7 +225,7 @@ ggplot(plot_data, aes(x = tsne1, y = tsne2, colour = cluster)) +
 1. From your observation of the above t-SNE plot, did our clustering method (with Pearson correlation) group cells well?
 
 
-**[Optional]** We can evaluate the clustering performance using the cell type labels providede from the publication. 
+**[Optional]** We can evaluate the clustering performance using the cell type labels providede from the publications. 
 
 ```{r, fig.height=5, fig.width=10}
 # ARI
@@ -352,13 +352,15 @@ ggplot(data = tsne_plotdf, aes(x = tsne1, y = tsne2, colour = Gys2) ) +
   labs(col = "Gys2 expression", x = "tsne1", y = "tsne2")
 ```
 
-<h4> <span class="glyphicon glyphicon-education" aria-hidden="true"></span> Quick quiz </h4>
 
-What does the above t-SNE plot tell you?    
+
+
 
 <h4> <span class="glyphicon glyphicon-education" aria-hidden="true"></span> Quick quiz </h4>  
 
-Here we repeat the analysis as above, but for cluster 3. See if you can understand the output.    
+1. What does the above t-SNE plot tell you?    
+
+1. Here we repeat the analysis as above, but for cluster 3. See if you can understand the output.    
 
 ```{r}
 marker_cluster3 = readRDS("data/marker_cluster3.rds")
@@ -450,7 +452,7 @@ As you may have already noticed from above steps, unsupervised clustering method
 
 # Q4. What are the cell type composition in the data? {#q4}
 
-**NOTE:** From this step, we will assume we have correctly refined our cell type information from above steps and we will use the cell type information provided in the Su et. al. 2017 publication.
+**NOTE:** From this step, we will assume we have correctly refined our cell type information from above steps and we will use the cell type information provided in Su et. al. 2017 and Yang et. al. 2017. 
 
 ## Cell type proportions
 
