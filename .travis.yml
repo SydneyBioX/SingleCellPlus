@@ -1,13 +1,13 @@
 language: R
 cache: packages
-R: bioc-devel
+R: bioc-release
 dist: trusty
 latex: false
 os:
   - linux
   
 env:
-  - R_BIOC_VERSION: "3.9"
+  - R_BIOC_VERSION: "3.10"
 
 branches:
   only:
@@ -19,7 +19,6 @@ cache:
     - $HOME/bin
 
 script:
-  - R -e 'install.packages("BiocManager")'
   - R -e 'rmarkdown::render("./index.Rmd")'
 
 deploy:
