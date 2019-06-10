@@ -26,7 +26,7 @@ script:
     "scales", "scater", 
     "scran", "tidyverse", "viridis"), version = "3.10", ask = FALSE)'
   - Rscript -e 'install.packages("https://github.com/kevinwang09/SingleCellPlus/raw/master/scdney_mac_binary/scdney_0.1.2.tgz", repos = NULL)'
-  - R -e 'rmarkdown::render(c("./index.Rmd", "./qc.Rmd", "./scMerge.Rmd", "./downstream.Rmd"))'
+  - R -e 'rmarkdown::render_site(".")'
 
 deploy:
   provider: pages
