@@ -7,7 +7,7 @@ os:
   - linux
   
 env:
-  - R_BIOC_VERSION: "3.10"
+  - R_BIOC_VERSION: "3.9"
 
 branches:
   only:
