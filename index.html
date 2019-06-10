@@ -346,13 +346,14 @@ $(document).ready(function () {
 <p>You should be able to run the codes below in <code>R</code> to install all the packages needed in this workshop. If you encounter any problems. Please let one of the instructors know.</p>
 <pre class="r"><code>install.packages(&quot;BiocManager&quot;)
 BiocManager::install(&quot;scMerge&quot;, version = &quot;devel&quot;)
-BiocManager::install(c(&quot;devtools&quot;,
-                       &quot;DropletUtils&quot;, &quot;DescTools&quot;, &quot;edgeR&quot;,
+BiocManager::install(c(&quot;devtools&quot;, &quot;DropletUtils&quot;, &quot;edgeR&quot;,
                        &quot;ggpubr&quot;, &quot;MAST&quot;, 
                        &quot;mclust&quot;, &quot;monocle&quot;, 
                        &quot;plyr&quot;, &quot;Rtsne&quot;, 
                        &quot;scales&quot;, &quot;scater&quot;, 
-                       &quot;scran&quot;, &quot;tidyverse&quot;, &quot;viridis&quot;))
+                       &quot;scran&quot;, &quot;tidyverse&quot;, &quot;viridis&quot;,
+                       &quot;DescTools&quot;, &quot;amap&quot;, &quot;doParallel&quot;
+                       ))
 devtools::install_github(&quot;SydneyBioX/scdney&quot;)</code></pre>
 <div id="for-mac-users" class="section level2">
 <h2>For Mac users</h2>
@@ -377,7 +378,7 @@ devtools::install_github(&quot;SydneyBioX/scdney&quot;)</code></pre>
 <div id="session-info" class="section level1">
 <h1>Session Info</h1>
 <pre class="r"><code>Sys.time()</code></pre>
-<pre><code>## [1] &quot;2019-06-10 16:13:01 AEST&quot;</code></pre>
+<pre><code>## [1] &quot;2019-06-10 17:16:42 AEST&quot;</code></pre>
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>## R version 3.6.0 (2019-04-26)
 ## Platform: x86_64-apple-darwin15.6.0 (64-bit)

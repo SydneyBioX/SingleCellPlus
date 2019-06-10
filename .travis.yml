@@ -19,13 +19,14 @@ script:
   - Rscript -e 'BiocManager::install(version = "3.10", ask = FALSE)'
   - Rscript -e 'BiocManager::install(c(
     "scMerge", "devtools",
-    "DescTools",
     "DropletUtils", "edgeR",
     "ggpubr", "MAST", 
     "mclust", "monocle", 
     "plyr", "Rtsne", 
     "scales", "scater", 
-    "scran", "tidyverse", "viridis"), version = "3.10", ask = FALSE)'
+    "scran", "tidyverse", "viridis",
+    "DescTools", "amap", "doParallel", "ggridges", "lme4", "mice", "methods"
+    ), version = "3.10", ask = FALSE)'
   - Rscript -e 'install.packages("https://github.com/kevinwang09/SingleCellPlus/raw/master/scdney_mac_binary/scdney_0.1.2.tgz", repos = NULL)'
   - R -e 'rmarkdown::render_site(".")'
 

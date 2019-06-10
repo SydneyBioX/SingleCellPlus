@@ -37,13 +37,14 @@ You should be able to run the codes below in `R` to install all the packages nee
 ```{r install, eval = FALSE}
 install.packages("BiocManager")
 BiocManager::install("scMerge", version = "devel")
-BiocManager::install(c("devtools",
-                       "DropletUtils", "DescTools", "edgeR",
+BiocManager::install(c("devtools", "DropletUtils", "edgeR",
                        "ggpubr", "MAST", 
                        "mclust", "monocle", 
                        "plyr", "Rtsne", 
                        "scales", "scater", 
-                       "scran", "tidyverse", "viridis"))
+                       "scran", "tidyverse", "viridis",
+                       "DescTools", "amap", "doParallel", "ggridges", "lme4", "mice", "methods"
+                       ))
 devtools::install_github("SydneyBioX/scdney")
 ```
 
