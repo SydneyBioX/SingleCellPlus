@@ -5,6 +5,4 @@ Version: 0.0.1
 Imports: 
   BiocManager,
   devtools,
-  rmarkdown,
-  edgeR
-  
+  rmarkdown
