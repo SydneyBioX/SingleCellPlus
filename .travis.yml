@@ -16,6 +16,7 @@ cache:
     - $HOME/bin
 
 script:
+  - R -e 'BiocManager::install(version = "devel")'
   - R -e 'BiocManager::install("scMerge", version = "devel")'
   - R -e 'rmarkdown::render("./index.Rmd")'
 
