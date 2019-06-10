@@ -345,15 +345,14 @@ $(document).ready(function () {
 <h1>Installation</h1>
 <p>You should be able to run the codes below in <code>R</code> to install all the packages needed in this workshop. If you encounter any problems. Please let one of the instructors know.</p>
 <pre class="r"><code>install.packages(&quot;BiocManager&quot;)
-
-BiocManager::install(c(&quot;scMerge&quot;, &quot;devtools&quot;,
-                       &quot;DropletUtils&quot;, &quot;edgeR&quot;,
+BiocManager::install(&quot;scMerge&quot;, version = &quot;devel&quot;)
+BiocManager::install(c(&quot;devtools&quot;,
+                       &quot;DropletUtils&quot;, &quot;DescTools&quot;, &quot;edgeR&quot;,
                        &quot;ggpubr&quot;, &quot;MAST&quot;, 
                        &quot;mclust&quot;, &quot;monocle&quot;, 
                        &quot;plyr&quot;, &quot;Rtsne&quot;, 
                        &quot;scales&quot;, &quot;scater&quot;, 
                        &quot;scran&quot;, &quot;tidyverse&quot;, &quot;viridis&quot;))
-
 devtools::install_github(&quot;SydneyBioX/scdney&quot;)</code></pre>
 <div id="for-mac-users" class="section level2">
 <h2>For Mac users</h2>
@@ -363,6 +362,42 @@ devtools::install_github(&quot;SydneyBioX/scdney&quot;)</code></pre>
 </div>
 <div id="reference" class="section level1">
 <h1>Reference</h1>
+<p><strong>Methodologies</strong></p>
+<ol style="list-style-type: decimal">
+<li><p><a href="(http://www.pnas.org/lookup/doi/10.1073/pnas.1820006116)">scMerge leverages factor analysis, stable expression, and pseudoreplication to merge multiple single-cell RNA-seq datasets</a> (2019). Yingxin Lin, Shila Ghazanfar, Kevin Y.X. Wang, Johann A. Gagnon-Bartsch, Kitty K. Lo, Xianbin Su, Ze-Guang Han, John T. Ormerod, Terence P. Speed, Pengyi Yang, Jean Y. H. Yang.</p></li>
+<li><p><a href="https://www.biorxiv.org/content/biorxiv/early/2018/11/22/229815.full.pdf">Evaluating stably expressed genes in single cells</a> (Under review). Yingxin Lin, Shila Ghazanfar, Dario Strbenac, Andy Wang, Ellis Patrick, Dave Lin, Terence Speed, Jean Y. H. Yang, Pengyi Yang.</p></li>
+<li><p><a href="https://doi.org/10.1093/bib/bby076">Impact of similarity metrics on single-cell RNA-seq data clustering</a> (2018). Taiyun Kim, Irene Rui Chen, Yingxin Lin, Andy Y. Y. Wang, Jean Y. H. Yang, Pengyi Yang.</p></li>
+</ol>
+<p><strong>Data</strong></p>
+<ol style="list-style-type: decimal">
+<li><p><a href="https://doi.org/10.1186/s12864-017-4342-x">Single-cell RNA-Seq analysis reveals dynamic trajectories during mouse liver development</a> (2017). Xianbin Su, Yi Shi, Xin Zou, Zhao-Ning Lu, Gangcai Xie, Jean Y. H. Yang, Chong-Chao Wu, Xiao-Fang Cui, Kun-Yan He, Qing Luo, Yu-Lan Qu, Na Wang, Lan Wang, Ze-Guang Han.</p></li>
+<li><p><a href="https://doi.org/10.1002/hep.29353">A single‐cell transcriptomic analysis reveals precise pathways and regulatory mechanisms underlying hepatoblast differentiation</a> (2017). Li Yang, Wei‐Hua Wang, Wei‐Lin Qi, Zhen Guo, Erfei Bi, Cheng‐Ran Xu.</p></li>
+</ol>
+</div>
+<div id="session-info" class="section level1">
+<h1>Session Info</h1>
+<pre class="r"><code>Sys.time()</code></pre>
+<pre><code>## [1] &quot;2019-06-10 16:13:01 AEST&quot;</code></pre>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>## R version 3.6.0 (2019-04-26)
+## Platform: x86_64-apple-darwin15.6.0 (64-bit)
+## Running under: macOS High Sierra 10.13.6
+## 
+## Matrix products: default
+## BLAS:   /Library/Frameworks/R.framework/Versions/3.6/Resources/lib/libRblas.0.dylib
+## LAPACK: /Library/Frameworks/R.framework/Versions/3.6/Resources/lib/libRlapack.dylib
+## 
+## locale:
+## [1] en_AU.UTF-8/en_AU.UTF-8/en_AU.UTF-8/C/en_AU.UTF-8/en_AU.UTF-8
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## loaded via a namespace (and not attached):
+##  [1] compiler_3.6.0  magrittr_1.5    tools_3.6.0     htmltools_0.3.6
+##  [5] yaml_2.2.0      Rcpp_1.0.1      stringi_1.4.3   rmarkdown_1.13 
+##  [9] knitr_1.23      stringr_1.4.0   xfun_0.7        digest_0.6.19  
+## [13] evaluate_0.14</code></pre>
 </div>
 
 

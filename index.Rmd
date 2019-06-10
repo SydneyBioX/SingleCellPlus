@@ -38,7 +38,7 @@ You should be able to run the codes below in `R` to install all the packages nee
 install.packages("BiocManager")
 BiocManager::install("scMerge", version = "devel")
 BiocManager::install(c("devtools",
-                       "DropletUtils", "edgeR",
+                       "DropletUtils", "DescTools", "edgeR",
                        "ggpubr", "MAST", 
                        "mclust", "monocle", 
                        "plyr", "Rtsne", 
@@ -57,7 +57,24 @@ install.packages("https://github.com/kevinwang09/SingleCellPlus/raw/master/scdne
 
 # Reference
 
+**Methodologies**
 
+1. [scMerge leverages factor analysis, stable expression, and pseudoreplication to merge multiple single-cell RNA-seq datasets]((http://www.pnas.org/lookup/doi/10.1073/pnas.1820006116)) (2019). Yingxin Lin, Shila Ghazanfar, Kevin Y.X. Wang, Johann A. Gagnon-Bartsch, Kitty K. Lo, Xianbin Su, Ze-Guang Han, John T. Ormerod, Terence P. Speed, Pengyi Yang, Jean Y. H. Yang.
+
+1. [Evaluating stably expressed genes in single cells](https://www.biorxiv.org/content/biorxiv/early/2018/11/22/229815.full.pdf) (Under review). Yingxin Lin, Shila Ghazanfar, Dario Strbenac, Andy Wang, Ellis Patrick, Dave Lin, Terence Speed, Jean Y. H. Yang, Pengyi Yang.
+
+1. [Impact of similarity metrics on single-cell RNA-seq data clustering](https://doi.org/10.1093/bib/bby076) (2018). Taiyun Kim, Irene Rui Chen, Yingxin Lin, Andy Y. Y. Wang, Jean Y. H. Yang, Pengyi Yang.
+
+
+**Data**
+
+1. [Single-cell RNA-Seq analysis reveals dynamic trajectories during mouse liver development](https://doi.org/10.1186/s12864-017-4342-x) (2017). Xianbin Su, Yi Shi, Xin Zou, Zhao-Ning Lu, Gangcai Xie, Jean Y. H. Yang, Chong-Chao Wu, Xiao-Fang Cui, Kun-Yan He, Qing Luo, Yu-Lan Qu, Na Wang, Lan Wang, Ze-Guang Han.
+
+1. [A single‐cell transcriptomic analysis reveals precise pathways and regulatory mechanisms underlying hepatoblast differentiation](https://doi.org/10.1002/hep.29353) (2017). Li Yang, Wei‐Hua Wang, Wei‐Lin Qi, Zhen Guo, Erfei Bi, Cheng‐Ran Xu. 
+
+
+
+# Session Info
 ```{r}
 Sys.time()
 sessionInfo()
