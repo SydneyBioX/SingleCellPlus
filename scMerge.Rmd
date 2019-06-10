@@ -30,11 +30,11 @@ The ultimate result is a well-merged data where the cells are separated out by t
 # Loading in the packages 
 
 
-```{r, message=FALSE}
+```{r load scMerge pkg, message=FALSE}
 library(scMerge)
 library(scater)
 library(dplyr)
-library(gridExtra)
+library(ggpubr)
 library(forcats)
 library(dplyr)
 
@@ -169,7 +169,7 @@ tsne_logcounts_batch = scater::plotTSNE(sce_combine,
                                       run_args = list(exprs_values = "logcounts")) +
   scale_fill_brewer(palette = "Dark2")
 
-grid.arrange(tsne_logcounts_cellTypes, tsne_logcounts_batch, nrow = 1)
+ggpubr::ggarrange(tsne_logcounts_cellTypes, tsne_logcounts_batch, ncol = 2, nrow = 1)
 ```
 
 
@@ -227,7 +227,7 @@ tsne_scMerge_supervised_batch = scater::plotTSNE(scMerge_supervised,
                                                run_args = list(exprs_values = "scMerge_supervised")) +
   scale_fill_brewer(palette = "Dark2")
 
-grid.arrange(tsne_scMerge_supervised_cellTypes, tsne_scMerge_supervised_batch, nrow = 1)
+ggpubr::ggarrange(tsne_scMerge_supervised_cellTypes, tsne_scMerge_supervised_batch, ncol = 2, nrow = 1)
 ```
 
 
@@ -273,7 +273,7 @@ tsne_scMerge_unsupervised_batch = scater::plotTSNE(scMerge_unsupervised,
                                                  run_args = list(exprs_values = "scMerge_unsupervised")) +
   scale_fill_brewer(palette = "Dark2")
 
-grid.arrange(tsne_scMerge_unsupervised_cellTypes, tsne_scMerge_unsupervised_batch, nrow = 1)
+ggpubr::ggarrange(tsne_scMerge_unsupervised_cellTypes, tsne_scMerge_unsupervised_batch, ncol = 2, nrow = 1)
 ```
 
 
@@ -317,7 +317,7 @@ tsne_scMerge_semisupervised_batch = scater::plotTSNE(scMerge_semisupervised,
                                                    run_args = list(exprs_values = "scMerge_semisupervised")) +
   scale_fill_brewer(palette = "Dark2")
 
-grid.arrange(tsne_scMerge_semisupervised_cellTypes, tsne_scMerge_semisupervised_batch, nrow = 1)
+ggpubr::ggarrange(tsne_scMerge_semisupervised_cellTypes, tsne_scMerge_semisupervised_batch, ncol = 2, nrow = 1)
 ```
 
 
@@ -338,7 +338,7 @@ tsne_scMerge_semisupervised_hept = scater::plotTSNE(scMerge_semisupervised[, scM
                                                        run_args = list(exprs_values = "scMerge_semisupervised")) +
   scale_fill_brewer(palette = "Set1")
 
-grid.arrange(tsne_scMerge_unsupervised_hept, tsne_scMerge_semisupervised_hept, nrow = 1)
+ggpubr::ggarrange(tsne_scMerge_unsupervised_hept, tsne_scMerge_semisupervised_hept, ncol = 2, nrow = 1)
 ```
 
 
@@ -376,7 +376,7 @@ tsne_scMerge_fast_batch = scater::plotTSNE(scMerge_fast,
                                            run_args = list(exprs_values = "scMerge_fast")) +
   scale_fill_brewer(palette = "Dark2")
 
-grid.arrange(tsne_scMerge_fast_cellTypes, tsne_scMerge_fast_batch, nrow = 1)
+ggpubr::ggarrange(tsne_scMerge_fast_cellTypes, tsne_scMerge_fast_batch, ncol = 2, nrow = 1)
 ```
 
 

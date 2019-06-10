@@ -34,9 +34,9 @@ Ideally, you should be somewhat familiar with `R`. However, if you haven't used 
 
 You should be able to run the codes below in `R` to install all the packages needed in this workshop. If you encounter any problems. Please let one of the instructors know. 
 
-```{r, eval = FALSE}
-install.packages(c("BiocManager", "devtools"))
-BiocManager::install(c("scMerge", "scran", "scater", "monocle", "Rtsne", "DropletUtils"))
+```{r install, eval = FALSE}
+install.packages("BiocManager")
+BiocManager::install(c("scMerge", "scran", "scater", "monocle", "Rtsne", "DropletUtils", "devtools", "ggpubr", "tidyverse"))
 devtools::install_github("SydneyBioX/scdney")
 ```
 
@@ -44,7 +44,7 @@ devtools::install_github("SydneyBioX/scdney")
 
 If you could not run the last line of the above instructions (`devtools::install_github("SydneyBioX/scdney")`), then please try the following code instead. 
 
-```{r, eval = FALSE}
+```{r mac install, eval = FALSE}
 install.packages("https://github.com/kevinwang09/SingleCellPlus/raw/master/scdney_mac_binary/scdney_0.1.2.tgz", repos = NULL)
 ```
 

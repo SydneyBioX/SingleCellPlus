@@ -448,7 +448,7 @@ div.tocify {
 <pre class="r"><code>library(scMerge)
 library(scater)
 library(dplyr)
-library(gridExtra)
+library(ggpubr)
 library(forcats)
 library(dplyr)
 
@@ -624,7 +624,7 @@ table(
 <li><code>batch</code>: This is simply an indication of whether a cell was sourced from the Su or Yang dataset.</li>
 <li><code>stage</code>: The day on which the cell was taken from the mouse.</li>
 </ul>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-5-1.png" width="1152" /></p>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-4-1.png" width="1152" /></p>
 <p>For a well-merged dataset, we should expect that the cells are grouped by the cell types rather than the batch/data sources. One way to check for this is via a PCA plot. The following code creates a PCA plot coloured by cell types and another coloured by batches. Pay special attention to the Hepatoblast cells (green in the left panel) since it is the only cell type that exists in both batches. Do you think the raw data is well-merged?</p>
 <pre class="r"><code>set.seed(1234)
 tsne_logcounts_cellTypes = scater::plotTSNE(sce_combine, 
@@ -639,8 +639,8 @@ tsne_logcounts_batch = scater::plotTSNE(sce_combine,
                                       run_args = list(exprs_values = &quot;logcounts&quot;)) +
   scale_fill_brewer(palette = &quot;Dark2&quot;)
 
-grid.arrange(tsne_logcounts_cellTypes, tsne_logcounts_batch, nrow = 1)</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-6-1.png" width="1152" /></p>
+ggpubr::ggarrange(tsne_logcounts_cellTypes, tsne_logcounts_batch, ncol = 2, nrow = 1)</code></pre>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-5-1.png" width="1152" /></p>
 </div>
 </div>
 <div id="supervised-scmerge" class="section level1">
@@ -699,8 +699,8 @@ tsne_scMerge_supervised_batch = scater::plotTSNE(scMerge_supervised,
                                                run_args = list(exprs_values = &quot;scMerge_supervised&quot;)) +
   scale_fill_brewer(palette = &quot;Dark2&quot;)
 
-grid.arrange(tsne_scMerge_supervised_cellTypes, tsne_scMerge_supervised_batch, nrow = 1)</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-8-1.png" width="1152" /></p>
+ggpubr::ggarrange(tsne_scMerge_supervised_cellTypes, tsne_scMerge_supervised_batch, ncol = 2, nrow = 1)</code></pre>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-7-1.png" width="1152" /></p>
 </div>
 <div id="unsupervised-scmerge" class="section level1">
 <h1><span class="header-section-number">5</span> Unsupervised scMerge</h1>
@@ -738,7 +738,7 @@ grid.arrange(tsne_scMerge_supervised_cellTypes, tsne_scMerge_supervised_batch, n
 ## [1] 837   7</code></pre>
 <pre><code>## Step 2: Performing RUV normalisation. This will take minutes to hours.</code></pre>
 <pre><code>## scMerge complete!</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-9-1.png" width="480" /></p>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-8-1.png" width="480" /></p>
 <pre class="r"><code>scMerge_unsupervised</code></pre>
 <pre><code>## class: SingleCellExperiment 
 ## dim: 23801 837 
@@ -763,8 +763,8 @@ tsne_scMerge_unsupervised_batch = scater::plotTSNE(scMerge_unsupervised,
                                                  run_args = list(exprs_values = &quot;scMerge_unsupervised&quot;)) +
   scale_fill_brewer(palette = &quot;Dark2&quot;)
 
-grid.arrange(tsne_scMerge_unsupervised_cellTypes, tsne_scMerge_unsupervised_batch, nrow = 1)</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-10-1.png" width="1152" /></p>
+ggpubr::ggarrange(tsne_scMerge_unsupervised_cellTypes, tsne_scMerge_unsupervised_batch, ncol = 2, nrow = 1)</code></pre>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-9-1.png" width="1152" /></p>
 </div>
 <div id="extension-topics" class="section level1">
 <h1><span class="header-section-number">6</span> Extension topics</h1>
@@ -805,7 +805,7 @@ grid.arrange(tsne_scMerge_unsupervised_cellTypes, tsne_scMerge_unsupervised_batc
 ## [1] 837  18</code></pre>
 <pre><code>## Step 2: Performing RUV normalisation. This will take minutes to hours.</code></pre>
 <pre><code>## scMerge complete!</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-11-1.png" width="480" /></p>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-10-1.png" width="480" /></p>
 <div id="visualisation-of-semi-supervised-scmerge" class="section level3">
 <h3><span class="header-section-number">6.1.1</span> Visualisation of semi-supervised scMerge</h3>
 <pre class="r"><code>scMerge_semisupervised</code></pre>
@@ -833,8 +833,8 @@ tsne_scMerge_semisupervised_batch = scater::plotTSNE(scMerge_semisupervised,
                                                    run_args = list(exprs_values = &quot;scMerge_semisupervised&quot;)) +
   scale_fill_brewer(palette = &quot;Dark2&quot;)
 
-grid.arrange(tsne_scMerge_semisupervised_cellTypes, tsne_scMerge_semisupervised_batch, nrow = 1)</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-12-1.png" width="1152" /></p>
+ggpubr::ggarrange(tsne_scMerge_semisupervised_cellTypes, tsne_scMerge_semisupervised_batch, ncol = 2, nrow = 1)</code></pre>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-11-1.png" width="1152" /></p>
 <p>We will now visualise the Hepatoblast cells in the unsupervised scMerge result and then in the semi-supervised scMerge result. We will again use the tSNE plot, but this time, we will highlight the time point information. Notice that in the unsupervised scMerge result (left panel), <code>scMerge</code> removed the time points variations because we didn’t tell it that this is biological variations that we wish to retain.</p>
 <pre class="r"><code>set.seed(1234)
 tsne_scMerge_unsupervised_hept = scater::plotTSNE(scMerge_unsupervised[, scMerge_unsupervised$cellTypes == &quot;Hepatoblast&quot;], 
@@ -847,8 +847,8 @@ tsne_scMerge_semisupervised_hept = scater::plotTSNE(scMerge_semisupervised[, scM
                                                        run_args = list(exprs_values = &quot;scMerge_semisupervised&quot;)) +
   scale_fill_brewer(palette = &quot;Set1&quot;)
 
-grid.arrange(tsne_scMerge_unsupervised_hept, tsne_scMerge_semisupervised_hept, nrow = 1)</code></pre>
-<p><img src="scMerge_files/figure-html/unnamed-chunk-13-1.png" width="1152" /></p>
+ggpubr::ggarrange(tsne_scMerge_unsupervised_hept, tsne_scMerge_semisupervised_hept, ncol = 2, nrow = 1)</code></pre>
+<p><img src="scMerge_files/figure-html/unnamed-chunk-12-1.png" width="1152" /></p>
 </div>
 </div>
 <div id="speeding-up-scmerge" class="section level2">
@@ -878,7 +878,7 @@ tsne_scMerge_fast_batch = scater::plotTSNE(scMerge_fast,
                                            run_args = list(exprs_values = &quot;scMerge_fast&quot;)) +
   scale_fill_brewer(palette = &quot;Dark2&quot;)
 
-grid.arrange(tsne_scMerge_fast_cellTypes, tsne_scMerge_fast_batch, nrow = 1)</code></pre>
+ggpubr::ggarrange(tsne_scMerge_fast_cellTypes, tsne_scMerge_fast_batch, ncol = 2, nrow = 1)</code></pre>
 </div>
 </div>
 <div id="session-info" class="section level1">
@@ -900,62 +900,90 @@ grid.arrange(tsne_scMerge_fast_cellTypes, tsne_scMerge_fast_batch, nrow = 1)</co
 ## [8] methods   base     
 ## 
 ## other attached packages:
-##  [1] forcats_0.4.0               gridExtra_2.3              
-##  [3] dplyr_0.8.1                 scater_1.12.2              
-##  [5] ggplot2_3.1.1               SingleCellExperiment_1.6.0 
-##  [7] SummarizedExperiment_1.14.0 DelayedArray_0.10.0        
-##  [9] BiocParallel_1.18.0         matrixStats_0.54.0         
-## [11] Biobase_2.44.0              GenomicRanges_1.36.0       
-## [13] GenomeInfoDb_1.20.0         IRanges_2.18.1             
-## [15] S4Vectors_0.22.0            BiocGenerics_0.30.0        
-## [17] scMerge_1.1.2              
+##  [1] scater_1.12.2               scMerge_1.1.2              
+##  [3] forcats_0.4.0               stringr_1.4.0              
+##  [5] RColorBrewer_1.1-2          scales_1.0.0               
+##  [7] DropletUtils_1.4.1          plyr_1.8.4                 
+##  [9] ggpubr_0.2                  magrittr_1.5               
+## [11] viridis_0.5.1               viridisLite_0.3.0          
+## [13] MAST_1.10.0                 ggplot2_3.1.1              
+## [15] cluster_2.0.9               Rtsne_0.15                 
+## [17] mclust_5.4.3                scdney_0.1.2               
+## [19] edgeR_3.26.4                limma_3.40.2               
+## [21] dplyr_0.8.1                 SingleCellExperiment_1.6.0 
+## [23] SummarizedExperiment_1.14.0 DelayedArray_0.10.0        
+## [25] BiocParallel_1.18.0         matrixStats_0.54.0         
+## [27] Biobase_2.44.0              GenomicRanges_1.36.0       
+## [29] GenomeInfoDb_1.20.0         IRanges_2.18.1             
+## [31] S4Vectors_0.22.0            BiocGenerics_0.30.0        
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] nlme_3.1-140             bitops_1.0-6            
-##  [3] RColorBrewer_1.1-2       numDeriv_2016.8-1.1     
-##  [5] tools_3.6.0              backports_1.1.4         
-##  [7] R6_2.4.0                 irlba_2.3.3             
-##  [9] vipor_0.4.5              rpart_4.1-15            
-## [11] KernSmooth_2.23-15       Hmisc_4.2-0             
-## [13] lazyeval_0.2.2           mgcv_1.8-28             
-## [15] colorspace_1.4-1         nnet_7.3-12             
-## [17] withr_2.1.2              tidyselect_0.2.5        
-## [19] compiler_3.6.0           BiocNeighbors_1.2.0     
-## [21] htmlTable_1.13.1         labeling_0.3            
-## [23] caTools_1.17.1.2         scales_1.0.0            
-## [25] checkmate_1.9.3          proxy_0.4-23            
-## [27] stringr_1.4.0            digest_0.6.19           
-## [29] foreign_0.8-71           rmarkdown_1.13          
-## [31] XVector_0.24.0           base64enc_0.1-3         
-## [33] pkgconfig_2.0.2          htmltools_0.3.6         
-## [35] ruv_0.9.7                bbmle_1.0.20            
-## [37] htmlwidgets_1.3          rlang_0.3.4             
-## [39] rstudioapi_0.10          DelayedMatrixStats_1.6.0
-## [41] gtools_3.8.1             acepack_1.4.1           
-## [43] BiocSingular_1.0.0       RCurl_1.95-4.12         
-## [45] magrittr_1.5             GenomeInfoDbData_1.2.1  
-## [47] Formula_1.2-3            Matrix_1.2-17           
-## [49] ggbeeswarm_0.6.0         Rcpp_1.0.1              
-## [51] munsell_0.5.0            viridis_0.5.1           
-## [53] stringi_1.4.3            yaml_2.2.0              
-## [55] zlibbioc_1.30.0          Rtsne_0.15              
-## [57] gplots_3.0.1.1           plyr_1.8.4              
-## [59] grid_3.6.0               gdata_2.18.0            
-## [61] M3Drop_1.10.0            reldist_1.6-6           
-## [63] crayon_1.3.4             lattice_0.20-38         
-## [65] cowplot_0.9.4            splines_3.6.0           
-## [67] knitr_1.23               pillar_1.4.1            
-## [69] igraph_1.2.4.1           codetools_0.2-16        
-## [71] glue_1.3.1               evaluate_0.14           
-## [73] latticeExtra_0.6-28      data.table_1.12.2       
-## [75] foreach_1.4.4            tidyr_0.8.3             
-## [77] gtable_0.3.0             purrr_0.3.2             
-## [79] assertthat_0.2.1         xfun_0.7                
-## [81] rsvd_1.0.1               RcppEigen_0.3.3.5.0     
-## [83] viridisLite_0.3.0        survival_2.44-1.1       
-## [85] tibble_2.1.3             iterators_1.0.10        
-## [87] beeswarm_0.2.3           cluster_2.0.9           
-## [89] statmod_1.4.32</code></pre>
+##   [1] snow_0.4-3               backports_1.1.4         
+##   [3] Hmisc_4.2-0              blme_1.0-4              
+##   [5] RcppEigen_0.3.3.5.0      igraph_1.2.4.1          
+##   [7] lazyeval_0.2.2           splines_3.6.0           
+##   [9] amap_0.8-17              digest_0.6.19           
+##  [11] foreach_1.4.4            htmltools_0.3.6         
+##  [13] gdata_2.18.0             fansi_0.4.0             
+##  [15] checkmate_1.9.3          doParallel_1.0.14       
+##  [17] recipes_0.1.5            gower_0.2.1             
+##  [19] R.utils_2.8.0            colorspace_1.4-1        
+##  [21] pan_1.6                  xfun_0.7                
+##  [23] crayon_1.3.4             RCurl_1.95-4.12         
+##  [25] lme4_1.1-21              zeallot_0.1.0           
+##  [27] survival_2.44-1.1        iterators_1.0.10        
+##  [29] glue_1.3.1               ruv_0.9.7               
+##  [31] gtable_0.3.0             ipred_0.9-9             
+##  [33] zlibbioc_1.30.0          XVector_0.24.0          
+##  [35] BiocSingular_1.0.0       Rhdf5lib_1.6.0          
+##  [37] HDF5Array_1.12.1         reldist_1.6-6           
+##  [39] jomo_2.6-8               abind_1.4-5             
+##  [41] mvtnorm_1.0-10           Rcpp_1.0.1              
+##  [43] htmlTable_1.13.1         dqrng_0.2.1             
+##  [45] rsvd_1.0.1               proxy_0.4-23            
+##  [47] foreign_0.8-71           Formula_1.2-3           
+##  [49] lava_1.6.5               prodlim_2018.04.18      
+##  [51] htmlwidgets_1.3          gplots_3.0.1.1          
+##  [53] ellipsis_0.1.0           acepack_1.4.1           
+##  [55] mice_3.5.0               pkgconfig_2.0.2         
+##  [57] R.methodsS3_1.7.1        manipulate_1.0.1        
+##  [59] nnet_7.3-12              locfit_1.5-9.1          
+##  [61] utf8_1.1.4               caret_6.0-84            
+##  [63] tidyselect_0.2.5         labeling_0.3            
+##  [65] rlang_0.3.4              reshape2_1.4.3          
+##  [67] munsell_0.5.0            tools_3.6.0             
+##  [69] cli_1.1.0                generics_0.0.2          
+##  [71] broom_0.5.2              ggridges_0.5.1          
+##  [73] evaluate_0.14            yaml_2.2.0              
+##  [75] ModelMetrics_1.2.2       knitr_1.23              
+##  [77] caTools_1.17.1.2         purrr_0.3.2             
+##  [79] randomForest_4.6-14      mitml_0.3-7             
+##  [81] dendextend_1.12.0        nlme_3.1-140            
+##  [83] R.oo_1.22.0              compiler_3.6.0          
+##  [85] rstudioapi_0.10          beeswarm_0.2.3          
+##  [87] e1071_1.7-2              statmod_1.4.32          
+##  [89] tibble_2.1.3             DescTools_0.99.28       
+##  [91] stringi_1.4.3            lattice_0.20-38         
+##  [93] Matrix_1.2-17            nloptr_1.2.1            
+##  [95] M3Drop_1.10.0            vctrs_0.1.0             
+##  [97] pillar_1.4.1             BiocNeighbors_1.2.0     
+##  [99] irlba_2.3.3              data.table_1.12.2       
+## [101] cowplot_0.9.4            bitops_1.0-6            
+## [103] R6_2.4.0                 latticeExtra_0.6-28     
+## [105] KernSmooth_2.23-15       gridExtra_2.3           
+## [107] vipor_0.4.5              codetools_0.2-16        
+## [109] gtools_3.8.1             boot_1.3-22             
+## [111] MASS_7.3-51.4            assertthat_0.2.1        
+## [113] rhdf5_2.28.0             withr_2.1.2             
+## [115] GenomeInfoDbData_1.2.1   mgcv_1.8-28             
+## [117] expm_0.999-4             doSNOW_1.0.16           
+## [119] grid_3.6.0               rpart_4.1-15            
+## [121] timeDate_3043.102        tidyr_0.8.3             
+## [123] class_7.3-15             minqa_1.2.4             
+## [125] DelayedMatrixStats_1.6.0 rmarkdown_1.13          
+## [127] clusteval_0.1            bbmle_1.0.20            
+## [129] numDeriv_2016.8-1.1      lubridate_1.7.4         
+## [131] base64enc_0.1-3          ggbeeswarm_0.6.0</code></pre>
 </div>
 
 

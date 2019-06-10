@@ -21,7 +21,7 @@ One of the first steps in single-cell RNA-seq analysis is to perform a quality c
 
 Load in packages required to generate the QC plots.
 
-```{r, warning=FALSE, message=FALSE}
+```{r load qc pkg, warning=FALSE, message=FALSE}
 library(DropletUtils)
 library(dplyr)
 library(ggplot2)
@@ -322,3 +322,10 @@ dim(liver_new)
 ```
 
 [Extension]. Try removing the cells with abnormally high mitochondrial gene expression
+
+
+# Session Info
+```{r}
+sessionInfo()
+```
+
