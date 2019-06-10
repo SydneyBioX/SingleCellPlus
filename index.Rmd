@@ -59,6 +59,7 @@ install.packages("https://github.com/kevinwang09/SingleCellPlus/raw/master/scdne
 
 
 ```{r}
+Sys.time()
 sessionInfo()
 ```
 
