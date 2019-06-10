@@ -16,8 +16,8 @@ cache:
     - $HOME/bin
 
 script:
-- Rscript -e 'BiocManager::install(version = "3.10")'
-  - Rscript -e 'BiocManager::install("scMerge", version = "3.10")'
+  - Rscript -e 'BiocManager::install(version = "3.10", ask = FALSE)'
+  - Rscript -e 'BiocManager::install("scMerge", version = "3.10", ask = FALSE)'
   - R -e 'rmarkdown::render("./index.Rmd")'
 
 deploy:
