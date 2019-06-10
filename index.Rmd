@@ -36,15 +36,14 @@ You should be able to run the codes below in `R` to install all the packages nee
 
 ```{r install, eval = FALSE}
 install.packages("BiocManager")
-BiocManager::install("scMerge", version = "devel")
-BiocManager::install(c("devtools", "DropletUtils", "edgeR",
+BiocManager::install(c("scMerge", "devtools", 
+                       "DropletUtils", "edgeR",
                        "ggpubr", "MAST", 
-                       "mclust", "monocle", 
                        "plyr", "Rtsne", 
                        "scales", "scater", 
-                       "scran", "tidyverse", "viridis",
-                       "DescTools", "amap", "doParallel", "ggridges", "lme4", "mice", "methods", "caret", "randomForest", "clusteval", "dendextend", "gmodels", "e1071"
-                       ))
+                       "scran", "tidyverse", 
+                       "viridis"), version = "3.10")
+
 devtools::install_github("SydneyBioX/scdney")
 ```
 
@@ -53,6 +52,14 @@ devtools::install_github("SydneyBioX/scdney")
 If you could not run the last line of the above instructions (`devtools::install_github("SydneyBioX/scdney")`), then please try the following code instead. 
 
 ```{r mac install, eval = FALSE}
+BiocManager::install(c("DescTools", "amap", 
+                       "doParallel", "ggridges", 
+                       "lme4", "mice", 
+                       "methods", "caret", 
+                       "randomForest", "clusteval", 
+                       "dendextend", "gmodels", 
+                       "e1071"), version = "3.10")
+
 install.packages("https://github.com/kevinwang09/SingleCellPlus/raw/master/scdney_mac_binary/scdney_0.1.3.tgz", repos = NULL)
 ```
 
@@ -72,12 +79,3 @@ install.packages("https://github.com/kevinwang09/SingleCellPlus/raw/master/scdne
 1. [Single-cell RNA-Seq analysis reveals dynamic trajectories during mouse liver development](https://doi.org/10.1186/s12864-017-4342-x) (2017). Xianbin Su, Yi Shi, Xin Zou, Zhao-Ning Lu, Gangcai Xie, Jean Y. H. Yang, Chong-Chao Wu, Xiao-Fang Cui, Kun-Yan He, Qing Luo, Yu-Lan Qu, Na Wang, Lan Wang, Ze-Guang Han.
 
 1. [A single‐cell transcriptomic analysis reveals precise pathways and regulatory mechanisms underlying hepatoblast differentiation](https://doi.org/10.1002/hep.29353) (2017). Li Yang, Wei‐Hua Wang, Wei‐Lin Qi, Zhen Guo, Erfei Bi, Cheng‐Ran Xu. 
-
-
-
-# Session Info
-```{r}
-Sys.time()
-sessionInfo()
-```
-

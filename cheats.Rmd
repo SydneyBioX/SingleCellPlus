@@ -5,6 +5,14 @@ date: "04/06/2019"
 output: html_document
 ---
 
+# `BioC` version 3.10
+
+BioC V 3.10 is the current development branch of the Bioconductor. It should work with R 3.6. 
+
+However, if anyone has trouble with BioC 3.10 package installation, they should be able to get away with that using 3.9. 
+
+The only exception is that `scMerge` must be version 1.1.3 or above. 
+
 # `R 3.5` installation of `scMerge`
 
 https://github.com/SydneyBioX/scMerge/issues/11
@@ -15,6 +23,5 @@ devtools::install_github("SydneyBioX/scMerge", ref = "280a7724cd49f10e535f4023a0
 
 ## scMerge V0.99.6, the last compatible version with R3.5
 devtools::install_github("SydneyBioX/scMerge", ref = "13d4b147b3fab795eb89852188d4708797cbea44")
-
 ```
 
