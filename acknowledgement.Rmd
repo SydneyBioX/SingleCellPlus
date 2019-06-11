@@ -5,11 +5,11 @@ date: "18 June 2019"
 output: html_document
 ---
 
-+ This workshop was funded by Single Cell Plus. 
++ This workshop was funded by Single Cell Plus grant. 
 
 + We would like to thank many people. 
 
-+ Dr. Kitty Lo was funded by... 
++ Dr. Kitty Lo is employed by the Faculty of Science at the University of Sydney. 
 
 + Mr. Kevin Wang was funded by the Golden Jubilee Travel Grant from the Statistical Society of Australia.  
 

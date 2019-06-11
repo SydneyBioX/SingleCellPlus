@@ -49,7 +49,10 @@ devtools::install_github("SydneyBioX/scdney")
 
 ## For Mac users
 
-If you could not run the last line of the above instructions (`devtools::install_github("SydneyBioX/scdney")`), then please try the following code instead. 
+If you could not run the last line of the above instructions (`devtools::install_github("SydneyBioX/scdney")`), then please 
+
+1. Try to install gfortran: https://cran.r-project.org/bin/macosx/tools/
+1. Try the following code instead
 
 ```{r mac install, eval = FALSE}
 BiocManager::install(c("DescTools", "amap", 
@@ -60,7 +63,7 @@ BiocManager::install(c("DescTools", "amap",
                        "dendextend", "gmodels", 
                        "e1071"), version = "3.10")
 
-install.packages("https://github.com/kevinwang09/SingleCellPlus/raw/master/scdney_mac_binary/scdney_0.1.3.tgz", repos = NULL)
+install.packages("https://github.com/SydneyBioX/scdney/releases/download/V0.1.3/scdney_0.1.3.tgz", repos = NULL)
 ```
 
 # Reference
