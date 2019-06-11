@@ -476,6 +476,55 @@ We observe that hepatoblast/hepatocyte is the largest population.
 
 # [Extension]. Any rare cell type? What is the most common cell type?
 
+# Extension: Monocle
+
+```{r}
+library(monocle)
+t1 = Sys.time()
+# monocle_data = subset_data[,colData(subset_data)$cellTypes %in% c("hepatoblast/hepatocyte", "cholangiocyte")]
+
+monocle_data = subset_data[,colData(subset_data)$cellTypes %in% c("hepatoblast/hepatocyte")]
+colData(monocle_data)$stage = stringr::str_sub(colnames(monocle_data), 1, 3)
+table(colData(monocle_data)$stage)
+rowData(monocle_data) = DataFrame(ensemblGeneID = rownames(monocle_data))
+monocle_data
+
+
+ 
+# expressed_genes = rowMeans(SummarizedExperiment::assay(subset_data, "scMerge") == 0)
+# hist(expressed_genes)
+
+
+subset_data_monocle = scran::convertTo(
+  monocle_data,
+  type = "monocle",
+  assay.type = "scMerge",
+  col.fields = c("cellTypes", "stage", "batch")) %>%
+  estimateSizeFactors()
+
+diff_test_res = differentialGeneTest(
+  subset_data_monocle, fullModelFormulaStr = "~stage")
+
+ordering_genes = row.names(subset(diff_test_res, qval < 0.00001))
+length(ordering_genes)
+subset_data_monocle = setOrderingFilter(subset_data_monocle, ordering_genes)
+subset_data_monocle = estimateDispersions(subset_data_monocle)
+plot_ordering_genes(subset_data_monocle)
+subset_data_monocle = reduceDimension(subset_data_monocle, 
+                                      max_components = 2,
+                                      method = 'DDRTree')
+subset_data_monocle = orderCells(subset_data_monocle)
+
+plot_cell_trajectory(subset_data_monocle, color_by = "stage")
+# plot_cell_trajectory(subset_data_monocle, color_by = "cellTypes")
+  # scale_color_brewer(palette = "RdBu")
+
+t2 = Sys.time()
+
+t2 - t1
+```
+
+
 
 # SessionInfo
 
