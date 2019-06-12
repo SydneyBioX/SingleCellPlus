@@ -353,13 +353,22 @@ BiocManager::install(c(&quot;scMerge&quot;, &quot;devtools&quot;,
                        &quot;scran&quot;, &quot;tidyverse&quot;, 
                        &quot;viridis&quot;), version = &quot;3.10&quot;)
 
+
 devtools::install_github(&quot;SydneyBioX/scdney&quot;)</code></pre>
+<div id="for-windows-users" class="section level2">
+<h2>For Windows users</h2>
+<p>If you could not run the last line of the above instructions, then please</p>
+<ol style="list-style-type: decimal">
+<li>Try to install <code>Rtools35</code> from <a href="https://cran.r-project.org/bin/windows/Rtools/" class="uri">https://cran.r-project.org/bin/windows/Rtools/</a>.</li>
+<li>Run <code>devtools::install_github("SydneyBioX/scdney")</code> again.</li>
+</ol>
+</div>
 <div id="for-mac-users" class="section level2">
 <h2>For Mac users</h2>
-<p>If you could not run the last line of the above instructions (<code>devtools::install_github("SydneyBioX/scdney")</code>), then please</p>
+<p>If you could not run the last line of the above instructions, then please</p>
 <ol style="list-style-type: decimal">
-<li>Try to install gfortran: <a href="https://cran.r-project.org/bin/macosx/tools/" class="uri">https://cran.r-project.org/bin/macosx/tools/</a></li>
-<li>Try the following code instead</li>
+<li>Try to install <code>gfortran-6.1</code> from <a href="https://cran.r-project.org/bin/macosx/tools/" class="uri">https://cran.r-project.org/bin/macosx/tools/</a>.</li>
+<li>Try the following code instead.</li>
 </ol>
 <pre class="r"><code>BiocManager::install(c(&quot;DescTools&quot;, &quot;amap&quot;, 
                        &quot;doParallel&quot;, &quot;ggridges&quot;, 

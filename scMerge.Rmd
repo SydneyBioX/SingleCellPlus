@@ -37,6 +37,7 @@ library(dplyr)
 library(ggpubr)
 library(forcats)
 library(dplyr)
+library(tidyr)
 
 theme_set(theme_classic(16))
 ```
@@ -93,7 +94,7 @@ sce_combine
 
 ## Manipulating a `SingleCellExperiment` object
 
-You can learn more about a `SingleCellExperiment` object here. In brief terms, in a `SingleCellExperiment` object, it stores three things: 
+You can learn more about a `SingleCellExperiment` object. In brief terms, in a `SingleCellExperiment` object, it stores three things: 
 
   + `colData` which stores information about the cells
   + `rowData` which stores infornatin about the genes
@@ -131,16 +132,21 @@ There are three information about our cells in this data:
   + `batch`: This is simply an indication of whether a cell was sourced from the Su or Yang dataset. 
   + `stage`: The day on which the cell was taken from the mouse. 
 
+We will visualise all three columns using a heatmap plot as shown below. 
+
+We see that the Hepatoblast cells are the only cell type common between the two data sources. 
+
 ```{r, fig.width=12, fig.height=6, message=FALSE, echo = FALSE}
 cell_data = colData(sce_combine) %>% 
   as.data.frame() %>% 
-  group_by(cellTypes, stage, batch) %>%
+  dplyr::group_by(cellTypes, stage, batch) %>%
   dplyr::summarise(n = n()) %>% 
-  ungroup() %>% 
-  tidyr::complete(cellTypes, stage, batch, fill = list(n = 0)) %>%
-  dplyr::mutate(
-    stage = factor(stage, levels = sort(unique(levels(stage))))
-  )
+  dplyr::ungroup() %>% 
+  tidyr::complete(cellTypes, stage, batch, fill = list(n = 0)) %>% 
+  dplyr::mutate(cellTypes = as.character(cellTypes))
+  # dplyr::mutate(
+  #   stage = factor(stage, levels = sort(unique(levels(stage))))
+  # )
 
 cell_data %>% 
   ggplot(aes(x = stage, y = cellTypes, fill = n, label = n)) +
@@ -150,7 +156,6 @@ cell_data %>%
   scale_fill_distiller(palette = "Blues", direction = 1) +
   labs(title = "Number of cells split by batch, celltypes and stage")
 ```
-
 
 
 For a well-merged dataset, we should expect that the cells are grouped by the cell types rather than the batch/data sources. One way to check for this is via a PCA plot. The following code creates a PCA plot coloured by cell types and another coloured by batches. Pay special attention to the Hepatoblast cells (green in the left panel) since it is the only cell type that exists in both batches. Do you think the raw data is well-merged?
