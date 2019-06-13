@@ -26,11 +26,16 @@ At the end of this workshop you should have some basic understanding of scRNASeq
 
 Ideally, you should be somewhat familiar with `R`. However, if you haven't used `R` before, don't worry! This is not a programming workshop, you can still pick up important practical skills by running the codes we provided. 
 
+Please try to download and install:
+
   + `R 3.6` from https://cloud.r-project.org/ 
   + `RStudio` from https://www.rstudio.com/products/rstudio/download/
-  
+
+
 
 # Installation 
+
+You can find all the data and materials [here](http://shiny.maths.usyd.edu.au/singlecellplus/SingleCellPlus_zip.zip). 
 
 You should be able to run the codes below in `R` to install all the packages needed in this workshop. If you encounter any problems. Please let one of the instructors know. 
 
@@ -73,6 +78,11 @@ BiocManager::install(c("DescTools", "amap",
 
 install.packages("https://github.com/SydneyBioX/scdney/releases/download/V0.1.3/scdney_0.1.3.tgz", repos = NULL)
 ```
+
+
+
+
+
 
 # References
 
