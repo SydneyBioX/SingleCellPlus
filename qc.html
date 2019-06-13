@@ -502,7 +502,7 @@ dim(liver)</code></pre>
 <p>The waterfall plots show two points of interest:</p>
 <ul>
 <li><strong>inflection point</strong> is the point on the curve where the first derivative is minimised</li>
-<li><strong>knee point</strong> is the point where the second derivative is minimised</li>
+<li><strong>knee point</strong> is the point where the signed curvature is minimised</li>
 </ul>
 <p>These two points potentially indicate empty droplets (background barcodes). If the number of count in each cell drops rapidly for those cells beyond knee point, then it may suggest empty reads.</p>
 <pre class="r"><code>barcode = DropletUtils::barcodeRanks(liver)
@@ -603,7 +603,7 @@ cell_plotdf_mean</code></pre>
        x = &quot;Number of unique genes expressed (in thousands)&quot;, 
        y = &quot;density&quot;) + 
   facet_wrap(~ stage, ncol = 3) </code></pre>
-<p><img src="qc_files/figure-html/unnamed-chunk-7-1.png" width="576" /></p>
+<p><img src="qc_files/figure-html/unnamed-chunk-7-1.png" width="768" /></p>
 <p>From above, we can see that most cells have between 9000-10,000 detected genes. This is roughly the amount expected for high-depth scRNA-seq; however, the expected value may vary between experimental protocols, sequencing depth, and cell type used. Note that, unlike library size, a “heavy tail” can be observed for each of the distribution, indicating an unequal detection of genes across populations. Filtering out cells with low number of genes identified is another way to improve the quality of the dataset.</p>
 </div>
 <div id="qc4-mitochondrial-gene-expression" class="section level1">
@@ -652,14 +652,6 @@ g2 = ggplot(mito_plotdf,
   labs(y = &quot;Mitochondrial percentage&quot;)
 
 ggpubr::ggarrange(g1, g2, ncol=  2, common.legend = TRUE, legend = &quot;right&quot;)</code></pre>
-<pre><code>## Warning: Removed 11 rows containing non-finite values (stat_bin).</code></pre>
-<pre><code>## Warning: Removed 11 rows containing non-finite values (stat_density).</code></pre>
-<pre><code>## Warning: Removed 6 rows containing missing values (geom_bar).</code></pre>
-<pre><code>## Warning: Removed 11 rows containing non-finite values (stat_bin).</code></pre>
-<pre><code>## Warning: Removed 11 rows containing non-finite values (stat_density).</code></pre>
-<pre><code>## Warning: Removed 6 rows containing missing values (geom_bar).</code></pre>
-<pre><code>## Warning in regularize.values(x, y, ties, missing(ties)): collapsing to
-## unique &#39;x&#39; values</code></pre>
 <p><img src="qc_files/figure-html/unnamed-chunk-8-1.png" width="960" /></p>
 <p>Filtering cells with greater than 10% of mitochondrial gene expression would remove cells that have abnormally high mitochondrial gene expression.</p>
 <h4>
@@ -704,6 +696,7 @@ liver_percent_plotdf %&gt;%
        title = &quot;Top 50 genes for all cell stages&quot;) +
   theme(legend.position = &quot;none&quot;)</code></pre>
 <p><img src="qc_files/figure-html/unnamed-chunk-9-1.png" width="768" /></p>
+<p>The plot above show that there are three spike-in genes within the top 50 genes. The presence of multiple spike-ins at the top of the list suggests that the concentration of spike-ins added to the experiment may need to be optimized for subsequent experiments. Overall, the relatively flat distributions indicate good coverage of the transcriptome.</p>
 <p>Alternatively, we can calculate the top 50 expressed genes for each stage, but we will leave this as an extension exercise.</p>
 <pre class="r"><code>liver_percent_split = split.data.frame(x = t(liver_percent), f = stage) %&gt;% lapply(t)
 
@@ -711,25 +704,8 @@ liver_percent_split_meanEachGene = liver_percent_split %&gt;% lapply(rowMeans)
 
 
 e115_top50 = liver_percent_split_meanEachGene$E11.5 %&gt;% sort(decreasing = TRUE) %&gt;% head(50) %&gt;% names
-e115_top50</code></pre>
-<pre><code>##  [1] &quot;ENSMUSG00000101111&quot; &quot;ENSMUSG00000064358&quot; &quot;ENSMUSG00000064351&quot;
-##  [4] &quot;ENSMUSG00000019505&quot; &quot;ENSMUSG00000029580&quot; &quot;ENSMUSG00000064370&quot;
-##  [7] &quot;ENSMUSG00000064354&quot; &quot;ENSMUSG00000102070&quot; &quot;ENSMUSG00000037742&quot;
-## [10] &quot;ENSMUSG00000064339&quot; &quot;ENSMUSG00000101249&quot; &quot;ENSMUSG00000062825&quot;
-## [13] &quot;ENSMUSG00000100862&quot; &quot;ENSMUSG00000106106&quot; &quot;ENSMUSG00000063632&quot;
-## [16] &quot;ENSMUSG00000066551&quot; &quot;ENSMUSG00000008348&quot; &quot;ENSMUSG00000068823&quot;
-## [19] &quot;ENSMUSG00000064341&quot; &quot;ENSMUSG00000064357&quot; &quot;ENSMUSG00000057113&quot;
-## [22] &quot;ENSMUSG00000023944&quot; &quot;ENSMUSG00000044285&quot; &quot;ENSMUSG00000069662&quot;
-## [25] &quot;ENSMUSG00000037894&quot; &quot;ERCC-00002&quot;         &quot;ERCC-00074&quot;        
-## [28] &quot;ENSMUSG00000054766&quot; &quot;ENSMUSG00000016559&quot; &quot;ENSMUSG00000001525&quot;
-## [31] &quot;ERCC-00096&quot;         &quot;ENSMUSG00000071072&quot; &quot;ENSMUSG00000064363&quot;
-## [34] &quot;ENSMUSG00000032518&quot; &quot;ENSMUSG00000060036&quot; &quot;ENSMUSG00000057666&quot;
-## [37] &quot;ENSMUSG00000015656&quot; &quot;ENSMUSG00000022816&quot; &quot;ENSMUSG00000067274&quot;
-## [40] &quot;ENSMUSG00000021427&quot; &quot;ENSMUSG00000072235&quot; &quot;ERCC-00130&quot;        
-## [43] &quot;ENSMUSG00000071866&quot; &quot;ENSMUSG00000022048&quot; &quot;ENSMUSG00000021546&quot;
-## [46] &quot;ENSMUSG00000046434&quot; &quot;ENSMUSG00000032399&quot; &quot;ENSMUSG00000023004&quot;
-## [49] &quot;ENSMUSG00000058558&quot; &quot;ENSMUSG00000029836&quot;</code></pre>
-<pre class="r"><code>e115_liver_percent = liver_percent[e115_top50, stage == &quot;E11.5&quot;] %&gt;% 
+
+e115_liver_percent = liver_percent[e115_top50, stage == &quot;E11.5&quot;] %&gt;% 
   as.matrix %&gt;% 
   reshape2::melt(varnames = c(&quot;gene_name&quot;, &quot;cell_name&quot;),
                  value.name = &quot;percent&quot;) %&gt;% 
@@ -763,7 +739,6 @@ e115_liver_percent %&gt;%
 <!--        y = "") -->
 <!--   theme(legend.position = "none") -->
 <!-- ``` -->
-<p>The plot above show that there are four spike-in genes within the top 50 genes. The presence of multiple spike-ins at the top of the list suggests that the concentration of spike-ins added to the experiment may need to be optimized for subsequent experiments. Overall, the relatively flat distributions indicate good coverage of the transcriptome.</p>
 </div>
 <div id="filtering" class="section level1">
 <h1><span class="header-section-number">8</span> Filtering</h1>
@@ -787,104 +762,48 @@ dim(liver_new)</code></pre>
 ## Running under: macOS High Sierra 10.13.6
 ## 
 ## Matrix products: default
-## BLAS:   /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib
+## BLAS:   /Library/Frameworks/R.framework/Versions/3.6/Resources/lib/libRblas.0.dylib
 ## LAPACK: /Library/Frameworks/R.framework/Versions/3.6/Resources/lib/libRlapack.dylib
 ## 
 ## locale:
 ## [1] en_AU.UTF-8/en_AU.UTF-8/en_AU.UTF-8/C/en_AU.UTF-8/en_AU.UTF-8
 ## 
 ## attached base packages:
-##  [1] splines   parallel  stats4    stats     graphics  grDevices utils    
-##  [8] datasets  methods   base     
+## [1] parallel  stats4    stats     graphics  grDevices utils     datasets 
+## [8] methods   base     
 ## 
 ## other attached packages:
 ##  [1] forcats_0.4.0               stringr_1.4.0              
-##  [3] scales_1.0.0                DropletUtils_1.5.3         
-##  [5] HSMMSingleCell_1.5.0        monocle_2.13.0             
-##  [7] DDRTree_0.1.5               irlba_2.3.3                
-##  [9] VGAM_1.1-1                  Matrix_1.2-17              
-## [11] plyr_1.8.4                  ggpubr_0.2                 
-## [13] magrittr_1.5                viridis_0.5.1              
-## [15] viridisLite_0.3.0           MAST_1.11.2                
-## [17] ggplot2_3.1.1               cluster_2.0.9              
-## [19] Rtsne_0.15                  mclust_5.4.3               
-## [21] scdney_0.1.2                edgeR_3.27.4               
-## [23] limma_3.41.3                dplyr_0.8.1                
-## [25] SingleCellExperiment_1.7.0  SummarizedExperiment_1.15.1
-## [27] DelayedArray_0.11.0         BiocParallel_1.19.0        
-## [29] matrixStats_0.54.0          Biobase_2.45.0             
-## [31] GenomicRanges_1.37.11       GenomeInfoDb_1.21.1        
-## [33] IRanges_2.19.10             S4Vectors_0.23.12          
-## [35] BiocGenerics_0.31.4        
+##  [3] ggpubr_0.2                  magrittr_1.5               
+##  [5] scales_1.0.0                ggplot2_3.1.1              
+##  [7] dplyr_0.8.1                 DropletUtils_1.5.3         
+##  [9] SingleCellExperiment_1.7.0  SummarizedExperiment_1.15.1
+## [11] DelayedArray_0.11.0         BiocParallel_1.19.0        
+## [13] matrixStats_0.54.0          Biobase_2.45.0             
+## [15] GenomicRanges_1.37.11       GenomeInfoDb_1.21.1        
+## [17] IRanges_2.19.10             S4Vectors_0.23.12          
+## [19] BiocGenerics_0.31.4        
 ## 
 ## loaded via a namespace (and not attached):
-##   [1] utf8_1.1.4               R.utils_2.8.0           
-##   [3] tidyselect_0.2.5         lme4_1.1-21             
-##   [5] htmlwidgets_1.3          grid_3.6.0              
-##   [7] combinat_0.0-8           docopt_0.6.1            
-##   [9] munsell_0.5.0            codetools_0.2-16        
-##  [11] statmod_1.4.32           scran_1.13.7            
-##  [13] withr_2.1.2              colorspace_1.4-1        
-##  [15] fastICA_1.2-1            knitr_1.23              
-##  [17] rstudioapi_0.10          DescTools_0.99.28       
-##  [19] labeling_0.3             slam_0.1-45             
-##  [21] GenomeInfoDbData_1.2.1   pheatmap_1.0.12         
-##  [23] rhdf5_2.29.0             vctrs_0.1.0             
-##  [25] generics_0.0.2           ipred_0.9-9             
-##  [27] xfun_0.7                 randomForest_4.6-14     
-##  [29] R6_2.4.0                 doParallel_1.0.14       
-##  [31] ggbeeswarm_0.6.0         rsvd_1.0.1              
-##  [33] locfit_1.5-9.1           bitops_1.0-6            
-##  [35] assertthat_0.2.1         nnet_7.3-12             
-##  [37] beeswarm_0.2.3           gtable_0.3.0            
-##  [39] timeDate_3043.102        rlang_0.3.4             
-##  [41] zeallot_0.1.0            lazyeval_0.2.2          
-##  [43] ModelMetrics_1.2.2       acepack_1.4.1           
-##  [45] broom_0.5.2              checkmate_1.9.3         
-##  [47] BiocManager_1.30.4       yaml_2.2.0              
-##  [49] reshape2_1.4.3           abind_1.4-5             
-##  [51] backports_1.1.4          Hmisc_4.2-0             
-##  [53] caret_6.0-84             tools_3.6.0             
-##  [55] lava_1.6.5               clusteval_0.1           
-##  [57] ellipsis_0.1.0           RColorBrewer_1.1-2      
-##  [59] proxy_0.4-23             dynamicTreeCut_1.63-1   
-##  [61] ggridges_0.5.1           Rcpp_1.0.1              
-##  [63] base64enc_0.1-3          zlibbioc_1.31.0         
-##  [65] purrr_0.3.2              RCurl_1.95-4.12         
-##  [67] densityClust_0.3         rpart_4.1-15            
-##  [69] cowplot_0.9.4            ggrepel_0.8.1           
-##  [71] data.table_1.12.2        manipulate_1.0.1        
-##  [73] RANN_2.6.1               mvtnorm_1.0-10          
-##  [75] packrat_0.5.0            mitml_0.3-7             
-##  [77] amap_0.8-17              evaluate_0.14           
-##  [79] sparsesvd_0.1-4          gridExtra_2.3           
-##  [81] compiler_3.6.0           scater_1.13.6           
-##  [83] tibble_2.1.3             mice_3.5.0              
-##  [85] crayon_1.3.4             minqa_1.2.4             
-##  [87] R.oo_1.22.0              htmltools_0.3.6         
-##  [89] Formula_1.2-3            snow_0.4-3              
-##  [91] tidyr_0.8.3              expm_0.999-4            
-##  [93] lubridate_1.7.4          MASS_7.3-51.4           
-##  [95] boot_1.3-22              cli_1.1.0               
-##  [97] R.methodsS3_1.7.1        pan_1.6                 
-##  [99] gower_0.2.1              igraph_1.2.4.1          
-## [101] pkgconfig_2.0.2          foreign_0.8-71          
-## [103] recipes_0.1.5            foreach_1.4.4           
-## [105] vipor_0.4.5              dqrng_0.2.1             
-## [107] blme_1.0-4               XVector_0.25.0          
-## [109] prodlim_2018.04.18       digest_0.6.19           
-## [111] rmarkdown_1.13           htmlTable_1.13.1        
-## [113] dendextend_1.12.0        DelayedMatrixStats_1.7.0
-## [115] jomo_2.6-8               nloptr_1.2.1            
-## [117] nlme_3.1-140             Rhdf5lib_1.7.2          
-## [119] BiocNeighbors_1.3.2      fansi_0.4.0             
-## [121] pillar_1.4.1             lattice_0.20-38         
-## [123] survival_2.44-1.1        glue_1.3.1              
-## [125] qlcMatrix_0.9.7          FNN_1.1.3               
-## [127] iterators_1.0.10         class_7.3-15            
-## [129] stringi_1.4.3            HDF5Array_1.13.2        
-## [131] BiocSingular_1.1.3       doSNOW_1.0.16           
-## [133] latticeExtra_0.6-28      e1071_1.7-2</code></pre>
+##  [1] Rcpp_1.0.1             locfit_1.5-9.1         lattice_0.20-38       
+##  [4] zeallot_0.1.0          assertthat_0.2.1       digest_0.6.19         
+##  [7] utf8_1.1.4             R6_2.4.0               plyr_1.8.4            
+## [10] backports_1.1.4        evaluate_0.14          pillar_1.4.1          
+## [13] zlibbioc_1.31.0        rlang_0.3.4            lazyeval_0.2.2        
+## [16] R.utils_2.8.0          R.oo_1.22.0            Matrix_1.2-17         
+## [19] rmarkdown_1.13         labeling_0.3           RCurl_1.95-4.12       
+## [22] munsell_0.5.0          HDF5Array_1.13.2       compiler_3.6.0        
+## [25] xfun_0.7               pkgconfig_2.0.2        htmltools_0.3.6       
+## [28] tidyselect_0.2.5       gridExtra_2.3          tibble_2.1.3          
+## [31] GenomeInfoDbData_1.2.1 edgeR_3.27.4           fansi_0.4.0           
+## [34] crayon_1.3.4           withr_2.1.2            bitops_1.0-6          
+## [37] R.methodsS3_1.7.1      grid_3.6.0             gtable_0.3.0          
+## [40] dqrng_0.2.1            cli_1.1.0              stringi_1.4.3         
+## [43] reshape2_1.4.3         XVector_0.25.0         limma_3.41.3          
+## [46] ellipsis_0.1.0         vctrs_0.1.0            cowplot_0.9.4         
+## [49] Rhdf5lib_1.7.2         tools_3.6.0            glue_1.3.1            
+## [52] purrr_0.3.2            yaml_2.2.0             colorspace_1.4-1      
+## [55] rhdf5_2.29.0           knitr_1.23</code></pre>
 </div>
 
 

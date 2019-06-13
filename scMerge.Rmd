@@ -30,7 +30,7 @@ The ultimate result is a well-merged data where the cells are separated out by t
 # Loading in the packages 
 
 
-```{r load scMerge pkg, message=FALSE}
+```{r load scMerge pkg,  warning=FALSE, message=FALSE}
 library(scMerge)
 library(scater)
 library(dplyr)
@@ -59,6 +59,8 @@ This is perhaps a good place to clarify the terminology **data sources** and **b
 
 
 For the purpose of efficient data management, the bioinformatics community uses a `SingleCellExperiment` object to store single cell data. We have saved the Su and Yang data as two separate RDS files and we will read these data in first. 
+
+Note: In the scMerge publication, we have merged [four mouse liver datasets](https://sydneybiox.github.io/scMerge/articles/case_study/Mouse_Liver_Data.html) together. This data is a bit too large for us to work with in this workshop, hence, we will only mearge the Su and Yang datasets.
 
 
 ```{r}
@@ -144,9 +146,6 @@ cell_data = colData(sce_combine) %>%
   dplyr::ungroup() %>% 
   tidyr::complete(cellTypes, stage, batch, fill = list(n = 0)) %>% 
   dplyr::mutate(cellTypes = as.character(cellTypes))
-  # dplyr::mutate(
-  #   stage = factor(stage, levels = sort(unique(levels(stage))))
-  # )
 
 cell_data %>% 
   ggplot(aes(x = stage, y = cellTypes, fill = n, label = n)) +
@@ -179,7 +178,7 @@ ggpubr::ggarrange(tsne_logcounts_cellTypes, tsne_logcounts_batch, ncol = 2, nrow
 
 
 
-# Supervised `scMerge`
+# 1. Supervised `scMerge`
 
 
 We will begin running `scMerge` with a simple example. 
@@ -239,7 +238,7 @@ ggpubr::ggarrange(tsne_scMerge_supervised_cellTypes, tsne_scMerge_supervised_bat
 
 
 
-# Unsupervised scMerge
+# 2. Unsupervised scMerge
 
 
 What if we do not have access to the cell type information? Can we still perform `scMerge`? 
