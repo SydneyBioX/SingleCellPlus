@@ -94,7 +94,7 @@ sce_combine
 
 ## Manipulating a `SingleCellExperiment` object
 
-You can learn more about a `SingleCellExperiment` object. In brief terms, in a `SingleCellExperiment` object, it stores three things: 
+You can learn more about `SingleCellExperiment` objects [here](http://bioconductor.org/packages/release/bioc/html/SingleCellExperiment.html). In brief terms, in a `SingleCellExperiment` object, it stores three things: 
 
   + `colData` which stores information about the cells
   + `rowData` which stores infornatin about the genes

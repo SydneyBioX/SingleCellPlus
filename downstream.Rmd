@@ -495,13 +495,13 @@ ggplot(plot_data,
 We observe that hepatoblast/hepatocyte is the largest population.
 
 
-# [Extension]. Any rare cell type? What is the most common cell type?
+# Extension: Any rare cell type? What is the most common cell type?
 
 # Extension: Monocle
 
 A popular question in scRNA-Seq analysis is if the gene expressions patterns changes over some time.
 
-The `monocle` method is a well-established psuedo-time trajectory reconstruction method from citation. You can learn more about the theoretical construction of `monocle` here. In terms of computations, `monocle` requires some psuedo-time modelling on each gene and then markers are selected to perform psuedo-time ordering. 
+The `monocle` method is a well-established psuedo-time trajectory reconstruction method from [Trapnell et. al. (2014)](https://www.nature.com/articles/nbt.2859). You can learn more about the theoretical construction of `monocle` here. In terms of computations, `monocle` requires some psuedo-time modelling on each gene and then markers are selected to perform psuedo-time ordering. 
 
 The code below construct psuedo-time trajectory for the Hepatoblast/Hepatocyte cells in the merged data. 
 
@@ -543,7 +543,7 @@ monocle_CellDataSet = reduceDimension(monocle_CellDataSet,
 monocle_CellDataSet = orderCells(monocle_CellDataSet)
 plot_cell_trajectory(monocle_CellDataSet, color_by = "stage")
 # monocle::plot_cell_clusters(monocle_CellDataSet)
-# plot_genes_in_pseudotime(monocle_CellDataSet["Epcam",], color_by="Time")
+plot_genes_in_pseudotime(monocle_CellDataSet[head(ordering_genes, 2),], color_by = "stage")
 ```
 
 
