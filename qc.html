@@ -504,14 +504,13 @@ dim(liver)</code></pre>
 <li><strong>inflection point</strong> is the point on the curve where the first derivative is minimised</li>
 <li><strong>knee point</strong> is the point where the signed curvature is minimised</li>
 </ul>
-<p>These two points potentially indicate empty droplets (background barcodes). If the number of count in each cell drops rapidly for those cells beyond knee point, then it may suggest empty reads.</p>
-<pre class="r"><code>barcode = DropletUtils::barcodeRanks(liver)
+<p>These two points potentially indicate empty droplets (background barcodes). If the number of count in each barcode drops rapidly for those barcode beyond knee point, then it may suggest empty reads.</p>
+<pre class="r"><code>barcode = DropletUtils::barcodeRanks(t(liver))
 barcode_data = as.data.frame(barcode)
 
 barcode_points = data.frame(
   type = c(&quot;inflection&quot;, &quot;knee&quot;),
-  value = c(barcode@metadata$inflection, barcode@metadata$knee)
-  )
+  value = c(barcode@metadata$inflection, barcode@metadata$knee))
 
 
 ggplot(data = barcode_data, aes(x = rank, y = total)) +
@@ -519,10 +518,12 @@ ggplot(data = barcode_data, aes(x = rank, y = total)) +
   geom_hline(data = barcode_points, 
              aes(yintercept = value, 
                  colour = type), linetype = 2) +
+  scale_x_log10(breaks = trans_breaks(&quot;log10&quot;, function(x) 10^x),
+                labels = trans_format(&quot;log10&quot;, math_format(10^.x))) +
   scale_y_log10(breaks = trans_breaks(&quot;log10&quot;, function(x) 10^x),
                 labels = trans_format(&quot;log10&quot;, math_format(10^.x))) +
   labs(title = &quot;Waterfall plot of read counts (log)&quot;, 
-       x = &quot;Rank&quot;, 
+       x = &quot;Log Rank&quot;, 
        y = &quot;Log counts&quot;)</code></pre>
 <p><img src="qc_files/figure-html/unnamed-chunk-5-1.png" width="768" /></p>
 <h4>
@@ -614,11 +615,13 @@ cell_plotdf_mean</code></pre>
 
 liver_mito = liver[mito_genes, ]
 
-mito_plotdf = data.frame(
+mito_plotdf_full = data.frame(
   cell_name = colnames(liver_mito),
   stage = stage, 
   mito_percent = colSums(liver_mito)/colSums(liver) * 100
-) %&gt;% dplyr::filter(stage %in% c(&quot;E11.5&quot;, &quot;E12.5&quot;, &quot;E13.5&quot;))
+) 
+
+mito_plotdf = mito_plotdf_full %&gt;% dplyr::filter(stage %in% c(&quot;E11.5&quot;, &quot;E12.5&quot;, &quot;E13.5&quot;))
 
 mito_plotdf_mean = mito_plotdf %&gt;% 
   group_by(stage) %&gt;% 
@@ -640,7 +643,6 @@ mito_plotdf_mean</code></pre>
              colour = &quot;blue&quot;, linetype = &quot;dashed&quot;, size = 1.5) +
   labs(x = &quot;Mitochondrial percentage&quot;, 
        y = &quot;Density&quot;) + 
-  scale_x_continuous(limits = c(0, 15)) +
   facet_wrap(~ stage, nrow = 3) 
 
 
@@ -696,7 +698,7 @@ liver_percent_plotdf %&gt;%
        title = &quot;Top 50 genes for all cell stages&quot;) +
   theme(legend.position = &quot;none&quot;)</code></pre>
 <p><img src="qc_files/figure-html/unnamed-chunk-9-1.png" width="768" /></p>
-<p>The plot above show that there are three spike-in genes within the top 50 genes. The presence of multiple spike-ins at the top of the list suggests that the concentration of spike-ins added to the experiment may need to be optimized for subsequent experiments. Overall, the relatively flat distributions indicate good coverage of the transcriptome.</p>
+<p>The plot above show that there are three spike-in genes within the top 50 genes. The presence of multiple spike-ins at the top of the list may suggest that the concentration of spike-ins added to the experiment may need to be optimized for subsequent experiments. Overall, the relatively flat distributions indicate good coverage of the transcriptome.</p>
 <p>Alternatively, we can calculate the top 50 expressed genes for each stage, but we will leave this as an extension exercise.</p>
 <pre class="r"><code>liver_percent_split = split.data.frame(x = t(liver_percent), f = stage) %&gt;% lapply(t)
 
@@ -716,8 +718,8 @@ e115_liver_percent %&gt;%
   geom_violin() +
   geom_jitter(alpha = 0.2) +
   coord_flip() +
-  labs(x = &quot;percent of library&quot;, 
-       y = &quot;genes&quot;,
+  labs(x = &quot;genes&quot;, 
+       y = &quot;percent of library&quot;,
        title = &quot;Top 50 expressed genes for E11.5 cells&quot;) +
   theme(legend.position = &quot;none&quot;)</code></pre>
 <p><img src="qc_files/figure-html/unnamed-chunk-10-1.png" width="768" /></p>
@@ -743,16 +745,20 @@ e115_liver_percent %&gt;%
 <div id="filtering" class="section level1">
 <h1><span class="header-section-number">8</span> Filtering</h1>
 <p>Here we will give a demonstration of how you can remove some of the cells from the dataset.<br />
-Recall in the waterfall plot, we have identified 2 outlier cells with low read counts. Here, we will illustrate how you can remove these two cells from the dataset.</p>
-<p>In the code provided below, originally there was 507 cells in the dataset, the 2 outlier cells would have rank 506 and 507 (largest rank means least number of reads). Thus, we will try to retain those cells with rank 505 or lower.</p>
+Recall in the mitochondiral plot, we have identified cells with a mitochondrial percentage greater than 10% as cells that we should remove. Thus, we will subset the data on the columns to retain those cells with a mitochondrial percentage less or equal to 10%.</p>
 <p>Finally we should check that the dimension of the dataset is correct after filtering.</p>
-<pre class="r"><code>liver_new &lt;- liver[, barcode_data$rank &lt;= 505]
+<pre class="r"><code>dim(liver)</code></pre>
+<pre><code>## [1] 37766   507</code></pre>
+<pre class="r"><code>liver_new = liver[, mito_plotdf$mito_percent &lt;= 10]
 dim(liver_new)</code></pre>
-<pre><code>## [1] 37766   505</code></pre>
+<pre><code>## [1] 37766   459</code></pre>
 <h4>
 <span class="glyphicon glyphicon-education" aria-hidden="true"></span> Quick quiz
 </h4>
-<p>Try removing the cells with abnormally high mitochondrial gene expression.</p>
+<p>Try removing the genes with barcode less than the inflection point.</p>
+<pre class="r"><code>table(barcode_data$total &gt;= barcode@metadata$inflection)
+liver_new2 = liver_new[barcode_data$total &gt;= barcode@metadata$inflection, ]
+dim(liver_new2)</code></pre>
 </div>
 <div id="session-info" class="section level1">
 <h1><span class="header-section-number">9</span> Session Info</h1>
@@ -777,7 +783,7 @@ dim(liver_new)</code></pre>
 ##  [3] ggpubr_0.2                  magrittr_1.5               
 ##  [5] scales_1.0.0                ggplot2_3.1.1              
 ##  [7] dplyr_0.8.1                 DropletUtils_1.5.3         
-##  [9] SingleCellExperiment_1.7.0  SummarizedExperiment_1.15.1
+##  [9] SingleCellExperiment_1.7.0  SummarizedExperiment_1.15.2
 ## [11] DelayedArray_0.11.0         BiocParallel_1.19.0        
 ## [13] matrixStats_0.54.0          Biobase_2.45.0             
 ## [15] GenomicRanges_1.37.11       GenomeInfoDb_1.21.1        
@@ -790,7 +796,7 @@ dim(liver_new)</code></pre>
 ##  [7] utf8_1.1.4             R6_2.4.0               plyr_1.8.4            
 ## [10] backports_1.1.4        evaluate_0.14          pillar_1.4.1          
 ## [13] zlibbioc_1.31.0        rlang_0.3.4            lazyeval_0.2.2        
-## [16] R.utils_2.8.0          R.oo_1.22.0            Matrix_1.2-17         
+## [16] R.utils_2.9.0          R.oo_1.22.0            Matrix_1.2-17         
 ## [19] rmarkdown_1.13         labeling_0.3           RCurl_1.95-4.12       
 ## [22] munsell_0.5.0          HDF5Array_1.13.2       compiler_3.6.0        
 ## [25] xfun_0.7               pkgconfig_2.0.2        htmltools_0.3.6       
