@@ -569,7 +569,7 @@ monocle_CellDataSet = reduceDimension(monocle_CellDataSet,
 monocle_CellDataSet = orderCells(monocle_CellDataSet)
 plot_cell_trajectory(monocle_CellDataSet, color_by = "stage")
 # monocle::plot_cell_clusters(monocle_CellDataSet)
-plot_genes_in_pseudotime(monocle_CellDataSet[head(ordering_genes, 2),], color_by = "stage")
+plot_genes_in_pseudotime(monocle_CellDataSet[c("Sarm1", "Gm38388"),], color_by = "stage")
 ```
 
 

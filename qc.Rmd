@@ -102,12 +102,12 @@ The waterfall plots show two points of interest:
   + **knee point** is the point where the signed curvature is minimised
   
   
-These two points potentially indicate empty droplets (background barcodes). If the number of count in each barcode drops rapidly for those barcode beyond knee point, then it may suggest empty reads.  
+These two points potentially indicate empty droplets (background barcodes). To elaborate on this concept, it is helpful to know that for microfluidic sequencing systems each droplet contains a bead and each bead are marked uniquely with a barcode. Intuitively, we can consider a droplet and the barcode associated with it as being a unique cell.  Due to the technology, however, sometimes the droplet don't always contain a cell, or it might contain multiples cells. We can now use the waterfall plot to detect those empty droplets. The barcodes with the number of counts dropping rapidly beyond knee point may suggest empty reads.  
 
 
 
 ```{r, fig.height=6, fig.width=8}
-barcode = DropletUtils::barcodeRanks(t(liver))
+barcode = DropletUtils::barcodeRanks(liver)
 barcode_data = as.data.frame(barcode)
 
 barcode_points = data.frame(
@@ -372,23 +372,23 @@ e115_liver_percent %>%
 # Filtering 
 
 Here we will give a demonstration of how you can remove some of the cells from the dataset.  
+
+In the `DropletUtils` package, it was recommended that we should only retain those cells above the inflection plot in the plot. So we will perform subsetiting on the cells (columns) of this data.
+
+```{r}
+table(barcode_data$total >= barcode@metadata$inflection)
+liver_new = liver[, barcode_data$total >= barcode@metadata$inflection]
+dim(liver_new)
+```
+
+
 Recall in the mitochondiral plot, we have identified cells with a mitochondrial percentage greater than 10% as cells that we should remove. Thus, we will subset the data on the columns to retain those cells with a mitochondrial percentage less or equal to 10%. 
 
 Finally we should check that the dimension of the dataset is correct after filtering. 
 
-```{r}
-dim(liver)
-liver_new = liver[, mito_plotdf$mito_percent <= 10]
-dim(liver_new)
-```
-
-<h4> <span class="glyphicon glyphicon-education" aria-hidden="true"></span> Quick quiz </h4>
-
-Try removing the genes with barcode less than the inflection point. 
-
 ```{r, eval = FALSE}
-table(barcode_data$total >= barcode@metadata$inflection)
-liver_new2 = liver_new[barcode_data$total >= barcode@metadata$inflection, ]
+dim(liver)
+liver_new2 = liver[, barcode_data$total >= barcode@metadata$inflection & mito_plotdf_full$mito_percent <= 10]
 dim(liver_new2)
 ```
 
