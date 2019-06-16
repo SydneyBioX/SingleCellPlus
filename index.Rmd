@@ -76,7 +76,7 @@ BiocManager::install(c("DescTools", "amap",
                        "dendextend", "gmodels", 
                        "e1071"), version = "3.10")
 
-install.packages("https://github.com/SydneyBioX/scdney/releases/download/V0.1.3/scdney_0.1.3.tgz", repos = NULL)
+install.packages("https://github.com/SydneyBioX/scdney/releases/download/V0.1.4/scdney_0.1.4.tgz", repos = NULL)
 ```
 
 
