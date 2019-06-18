@@ -81,7 +81,9 @@ install.packages("https://github.com/SydneyBioX/scdney/releases/download/V0.1.4/
 
 
 
+# Clipboard
 
+In some circumstances, we might need to share codes that are not currently a part of the existing materials. Please click [here](https://docs.google.com/document/d/136YffzxjkUM8RIGsnjD_yOkCTWw4Ijdwjy4_58nC-zc/edit?usp=sharing) to access these codes. 
 
 
 # References
