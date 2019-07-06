@@ -19,8 +19,7 @@ builtins <- c(
 	"DropletUtils", "edgeR",
 	"ggpubr", "MAST", 
 	"plyr", "Rtsne", 
-	"scales", "scater", 
-	"scran", "tidyverse", 
+	"scales", "tidyverse", 
 	"viridis", "monocle")
 
 for (builtin in builtins)
