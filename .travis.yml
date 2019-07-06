@@ -16,6 +16,9 @@ cache:
     - $HOME/bin
 
 script:
+  - bash wget "http://shiny.maths.usyd.edu.au/singlecellplus/SingleCellPlus_zip.zip" -P .
+  - bash unzip ./SingleCellPlus_zip.zip
+  - bash ls
   - Rscript -e 'BiocManager::version()'
   - Rscript -e 'source("./install.R")'
   - R -e 'rmarkdown::render_site()'
