@@ -21,10 +21,10 @@ script:
   - Rscript -e 'BiocManager::version()'
   - R -e 'rmarkdown::render("./index.Rmd")'
 
-#deploy:
-#  provider: pages
-#  skip_cleanup: true
-#  github_token: $GITHUB_TOKEN
-#  on:
-#    branch: master
-#  local_dir: "."
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  on:
+    branch: master
+  local_dir: "."
