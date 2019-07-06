@@ -102,3 +102,8 @@ In some circumstances, we might need to share codes that are not currently a par
 1. [Single-cell RNA-Seq analysis reveals dynamic trajectories during mouse liver development](https://doi.org/10.1186/s12864-017-4342-x), BMC Genomics, 2017. Xianbin Su, Yi Shi, Xin Zou, Zhao-Ning Lu, Gangcai Xie, Jean Y. H. Yang, Chong-Chao Wu, Xiao-Fang Cui, Kun-Yan He, Qing Luo, Yu-Lan Qu, Na Wang, Lan Wang, Ze-Guang Han.
 
 1. [A single‐cell transcriptomic analysis reveals precise pathways and regulatory mechanisms underlying hepatoblast differentiation](https://doi.org/10.1002/hep.29353), Hepatology, 2017. Li Yang, Wei‐Hua Wang, Wei‐Lin Qi, Zhen Guo, Erfei Bi, Cheng‐Ran Xu. 
+
+```{r}
+sessionInfo()
+```
+
