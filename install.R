@@ -19,8 +19,10 @@ builtins <- c(
 	"DropletUtils", "edgeR",
 	"ggpubr", "MAST", 
 	"plyr", "Rtsne", 
-	"scales", "tidyverse", 
-	"viridis", "monocle")
+	"scales", "scater", 
+	"scran", "tidyverse", 
+	"viridis", "monocle", 
+	"kevinwang09/scdney")
 
 for (builtin in builtins)
     if (!suppressWarnings(require(builtin, character.only=TRUE)))
