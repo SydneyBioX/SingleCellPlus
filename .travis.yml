@@ -19,6 +19,8 @@ script:
   - wget "http://shiny.maths.usyd.edu.au/singlecellplus/SingleCellPlus_zip.zip" -P .
   - unzip ./SingleCellPlus_zip.zip
   - ls
+  - rm -rf ./SingleCellPlus_zip.zip
+  - rm -rf ./SingleCellPlus.RProj
   - Rscript -e 'BiocManager::version()'
   - Rscript -e 'source("./install.R")'
   - R -e 'rmarkdown::render_site()'
