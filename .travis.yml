@@ -22,6 +22,7 @@ script:
   - ls ./data
   - rm -rf ./SingleCellPlus_zip.zip
   - rm -rf ./SingleCellPlus.RProj
+  - rm -rf ./__MACOSX
   - Rscript -e 'BiocManager::version()'
   - Rscript -e 'source("./install.R")'
   - R -e 'rmarkdown::render_site()'
