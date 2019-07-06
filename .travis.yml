@@ -17,15 +17,7 @@ cache:
 
 script:
   - Rscript -e 'BiocManager::version()'
-  - Rscript -e 'BiocManager::install(c(
-  "DropletUtils", "edgeR",
-	"ggpubr", "MAST", 
-	"plyr", "Rtsne", 
-	"scales", "scater", 
-	"scran", "tidyverse", 
-	"viridis", "monocle",
-	"kevinwang09/scdney"), version = "3.10", ask = FALSE)'
-  - Rscript -e 'BiocManager::version()'
+  - Rscript -e 'source("./install.R")'
   - R -e 'rmarkdown::render_site()'
 
 deploy:
