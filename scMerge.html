@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Sydney Precision Bioinformatics Group" />
+
+<meta name="date" content="2019-06-18" />
+
+<title>scMerge</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/paper.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 64px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h2 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h3 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h4 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h5 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h6 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">SingleCellPlus - HKU Workshop</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="qc.html">QC Process</a>
+</li>
+<li>
+  <a href="scMerge.html">scMerge</a>
+</li>
+<li>
+  <a href="downstream.html">Downstream Analysis</a>
+</li>
+<li>
+  <a href="acknowledgement.html">Acknowledgement</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">scMerge</h1>
+<h4 class="author">Sydney Precision Bioinformatics Group</h4>
+<h4 class="date">18 June 2019</h4>
+
+</div>
+
+
+<div id="introduction" class="section level1">
+<h1><span class="header-section-number">1</span> Introduction</h1>
+<p><code>scMerge</code> is a method developed by the Sydney Precision Bioinformatics Group. It aims to merge multiple scRNA-Seq data so that researchers can look for biological signals on data pooled from multiple data sources. The key to achieving a good merge is to remove the <strong>noise</strong> created by pooling data from multiple sources.</p>
+<p>There are two key steps in <code>scMerge</code>:</p>
+<ol style="list-style-type: decimal">
+<li>identifying cells of similar cell types and pooling these cells together;</li>
+<li>using Stably Expressed Genes (SEGs) to identify the data noises and removing the noises from the data.</li>
+</ol>
+<p>The ultimate result is a well-merged data where the cells are separated out by the biology but not the noise due to data sources.</p>
+<!-- # Loading in the packages  -->
+<!-- ```{r load scMerge pkg,  warning=FALSE, message=FALSE} -->
+<!-- library(scMerge) -->
+<!-- library(scater) -->
+<!-- library(dplyr) -->
+<!-- library(ggpubr) -->
+<!-- library(forcats) -->
+<!-- library(dplyr) -->
+<!-- library(tidyr) -->
+<!-- theme_set(theme_classic(16)) -->
+<!-- ``` -->
+<!-- # The mouse liver data -->
+<!-- We will begin with merging two mouse liver datasets.  -->
+<!-- This is perhaps a good place to clarify the terminology **data sources** and **batch**. In traditional transcriptomics analysis, the word **batch** means a large set of samples are processed by different technicians or sequenced on different dates etc. Our `scMerge` methodology not only corrects for the data noise created by this type of batches, but it can also correct for noises of unspecified origins e.g. noises created from multiple experiments with different biological questions in mind or noises from different protocols (see the table below). Hence, even though we may use these two terms interchangably, it is important to clarify that we are actually performing a more difficult task of merging from two different sources of data rather than simply correcting for batch effect within a single experiment.  -->
+<!-- | Name  | ID       | Author | DOI or URL                | Protocol   | Organism | Tissue | # of cell types | # of cells | # of batches | -->
+<!-- |-------|----------|--------|---------------------------|------------|----------|--------|-----------------|------------|--------------| -->
+<!-- | Liver | GSE87795 | Su     | 10.1186/s12864-017-4342-x | SMARTer/C1 | Mouse    | Liver  | 6               |    389     | 6            | -->
+<!-- |       | GSE90047 | Yang   | 10.1002/hep.29353         | Smart-Seq2 |          |        | 2               |    448     | 2            | -->
+<!-- For the purpose of efficient data management, the bioinformatics community uses a `SingleCellExperiment` object to store single cell data. We have saved the Su and Yang data as two separate RDS files and we will read these data in first.  -->
+<!-- Note: In the scMerge publication, we have merged [four mouse liver datasets](https://sydneybiox.github.io/scMerge/articles/case_study/Mouse_Liver_Data.html) together. This data is a bit too large for us to work with in this workshop, hence, we will only mearge the Su and Yang datasets. -->
+<!-- ```{r} -->
+<!-- su = readRDS("data/sce_GSE87795.rds") -->
+<!-- yang = readRDS("data/sce_GSE90047.rds") -->
+<!-- ``` -->
+<!-- ## Combing the data into a singular object -->
+<!-- The `scMerge` package has a convenient function that combines multiple `SingleCellExperiment` objects into a single `SingleCellExperiment` object. We will first put the Su and Yang data into a `list` and then run the `sce_cbind` function from `scMerge`.  -->
+<!-- ```{r} -->
+<!-- sce_list = list( -->
+<!--   su = su,  -->
+<!--   yang = yang -->
+<!-- ) -->
+<!-- sce_list -->
+<!-- sce_combine = scMerge::sce_cbind(sce_list = sce_list,  -->
+<!--                                  method = "union",  -->
+<!--                                  colData_names = c("cellTypes", "stage"), -->
+<!--                                  batch_names = c("Su", "Yang")) -->
+<!-- sce_combine -->
+<!-- ``` -->
+<!-- ## Manipulating a `SingleCellExperiment` object -->
+<!-- You can learn more about `SingleCellExperiment` objects [here](http://bioconductor.org/packages/release/bioc/html/SingleCellExperiment.html). In brief terms, in a `SingleCellExperiment` object, it stores three things:  -->
+<!--   + `colData` which stores information about the cells -->
+<!--   + `rowData` which stores infornatin about the genes -->
+<!--   + `assayData` which stores a matrix of single cell expression data -->
+<!-- In the Yang data, the cell type `Hepatoblast` is coded as `hepatoblast/hepatocyte`. In order to correct for this, we will briefly manipulate the `colData`. You do not need to know precise details of what is happening, please just copy and paste this code. -->
+<!-- ```{r} -->
+<!-- table( -->
+<!--   colData(sce_combine)$cellTypes,  -->
+<!--   colData(sce_combine)$batch -->
+<!-- ) -->
+<!-- colData(sce_combine)$cellTypes = colData(sce_combine)$cellTypes %>%  -->
+<!--   forcats::fct_recode(Hepatoblast = "hepatoblast/hepatocyte") %>%  -->
+<!--   droplevels() -->
+<!-- sce_combine = sce_combine[rowSums(SingleCellExperiment::counts(sce_combine)) != 0, -->
+<!--                           colSums(SingleCellExperiment::counts(sce_combine)) != 0] -->
+<!-- table( -->
+<!--   colData(sce_combine)$cellTypes,  -->
+<!--   colData(sce_combine)$batch -->
+<!-- ) -->
+<!-- ``` -->
+<!-- ## Visualisation of the raw data -->
+<!-- There are three information about our cells in this data:  -->
+<!--   + `cellTypes`: These are labelled cellTypes from the authors' publications. We will treat these labels as the ground truth in this workshop. -->
+<!--   + `batch`: This is simply an indication of whether a cell was sourced from the Su or Yang dataset.  -->
+<!--   + `stage`: The day on which the cell was taken from the mouse.  -->
+<!-- We will visualise all three columns using a heatmap plot as shown below.  -->
+<!-- We see that the Hepatoblast cells are the only cell type common between the two data sources.  -->
+<!-- ```{r, fig.width=12, fig.height=6, message=FALSE, echo = FALSE} -->
+<!-- cell_data = colData(sce_combine) %>%  -->
+<!--   as.data.frame() %>%  -->
+<!--   dplyr::group_by(cellTypes, stage, batch) %>% -->
+<!--   dplyr::summarise(n = n()) %>%  -->
+<!--   dplyr::ungroup() %>%  -->
+<!--   tidyr::complete(cellTypes, stage, batch, fill = list(n = 0)) %>%  -->
+<!--   dplyr::mutate(cellTypes = as.character(cellTypes)) -->
+<!-- cell_data %>%  -->
+<!--   ggplot(aes(x = stage, y = cellTypes, fill = n, label = n)) + -->
+<!--   geom_tile() + -->
+<!--   geom_text() + -->
+<!--   facet_wrap(~batch) + -->
+<!--   scale_fill_distiller(palette = "Blues", direction = 1) + -->
+<!--   labs(title = "Number of cells split by batch, celltypes and stage") -->
+<!-- ``` -->
+<!-- For a well-merged dataset, we should expect that the cells are grouped by the cell types rather than the batch/data sources. One way to check for this is via a PCA plot. The following code creates a PCA plot coloured by cell types and another coloured by batches. Pay special attention to the Hepatoblast cells (green in the left panel) since it is the only cell type that exists in both batches. Do you think the raw data is well-merged? -->
+<!-- ```{r, fig.width=12, fig.height=6, message=FALSE} -->
+<!-- set.seed(1234) -->
+<!-- tsne_logcounts_cellTypes = scater::plotTSNE(sce_combine,  -->
+<!--                                           colour_by = "cellTypes", -->
+<!--                                           run_args = list(exprs_values = "logcounts")) + -->
+<!--   scale_fill_brewer(palette = "Set1") -->
+<!-- set.seed(1234) -->
+<!-- tsne_logcounts_batch = scater::plotTSNE(sce_combine,  -->
+<!--                                       colour_by = "batch", -->
+<!--                                       run_args = list(exprs_values = "logcounts")) + -->
+<!--   scale_fill_brewer(palette = "Dark2") -->
+<!-- ggpubr::ggarrange(tsne_logcounts_cellTypes, tsne_logcounts_batch, ncol = 2, nrow = 1) -->
+<!-- ``` -->
+<!-- # 1. Supervised `scMerge` -->
+<!-- We will begin running `scMerge` with a simple example.  -->
+<!-- Remember that one of our evaluation metric is to bring the Hepatoblast cells from these two batches to be closer to each other. The way that `scMerge` achieves this is to consider cells that are similar to each other to be **pseudo-replicates** of each other. In our example, that means we should consider Hepatoblast cells from the Su dataset to be pseudo-replicates of the Hepatoblast cells in the Yang dataset. Once this is established, we can consider the noise that exists between these two groups of Hepatoblast cells to be the noise that we should remove from the data. This noise is estimated from the Stably Expressed Genes (SEGs), which is a list of genes that we have found to be highly expressed and stable across multiple datasets. Ultimately, we remove this noise component from the data and arrive at a merged dataset.  -->
+<!-- Other inputs of the `scMerge` function include -->
+<!--   + `sce_combine`: is a `SingleCellExperiment` object containing a column `batch` in its colData -->
+<!--   + `ctl`: An index of stably expressed genes -->
+<!--   + `cell_type`: Cell type information -->
+<!--   + `replicate_prop`: What is the proportion of cells to be used for finding pseudo-replicates -->
+<!--   + `assay_name`: The name of the merged data when stored in the output `SingleCellExperiment` -->
+<!--   + `verbose`: whether intermediate messages should be printed out  -->
+<!-- ```{r, fig.width=5, fig.height=5} -->
+<!-- data("segList_ensemblGeneID", package = "scMerge") -->
+<!-- scMerge_supervised = scMerge( -->
+<!--   sce_combine = sce_combine, -->
+<!--   ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG), -->
+<!--   cell_type = sce_combine$cellTypes, -->
+<!--   replicate_prop = 1, -->
+<!--   assay_name = "scMerge_supervised", -->
+<!--   verbose = TRUE) -->
+<!-- ``` -->
+<!-- The output of the `scMerge` function is a `SingleCellExperiment` object with one extra assay, `scMerge_supervised`. And we can check the PCA visualisation to see if the merge is sensible.  -->
+<!-- ```{r, fig.width=12, fig.height=6, message=FALSE} -->
+<!-- scMerge_supervised -->
+<!-- set.seed(1234) -->
+<!-- tsne_scMerge_supervised_cellTypes = scater::plotTSNE(scMerge_supervised,  -->
+<!--                                                    colour_by = "cellTypes", -->
+<!--                                                    run_args = list(exprs_values = "scMerge_supervised")) + -->
+<!--   scale_fill_brewer(palette = "Set1") -->
+<!-- set.seed(1234) -->
+<!-- tsne_scMerge_supervised_batch = scater::plotTSNE(scMerge_supervised,  -->
+<!--                                                colour_by = "batch", -->
+<!--                                                run_args = list(exprs_values = "scMerge_supervised")) + -->
+<!--   scale_fill_brewer(palette = "Dark2") -->
+<!-- ggpubr::ggarrange(tsne_scMerge_supervised_cellTypes, tsne_scMerge_supervised_batch, ncol = 2, nrow = 1) -->
+<!-- ``` -->
+<!-- # 2. Unsupervised scMerge -->
+<!-- What if we do not have access to the cell type information? Can we still perform `scMerge`?  -->
+<!-- The answer is yes! In the absence of true cell type information, `scMerge` will perform clustering in the background to assign the cells with cluster labels. These cluster labels closely mimick the true cell type labels and a similar merge performance can be attained.  -->
+<!-- Below is the code for the unsupervised version of `scMerge`. Instead of supplying the `cell_type` parameter, we will use the `kmeansK` parameter. The `kmeansK` parameter should be a vector that matches the number of batches in our `sce_combine` data (in this case, 2). The first number in `kmeansK` should be the number of expected cell types in the first batch (Su) and the second number should be the number of expected cell types in the second batch. In our case, we already know from the data table that there are 6 and 2 celltypes in the Su and Yang data respectively, hence we should specify `kmeansK = c(6, 2)`. -->
+<!-- Note: in the case that you do not know what is a good guess of number of cell types, you should specify a slightly higher number.  -->
+<!-- ```{r, fig.width=5, fig.height=5} -->
+<!-- scMerge_unsupervised = scMerge( -->
+<!--   sce_combine = sce_combine, -->
+<!--   ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG), -->
+<!--   kmeansK = c(6, 2), -->
+<!--   replicate_prop = 1, -->
+<!--   assay_name = "scMerge_unsupervised", -->
+<!--   verbose = TRUE) -->
+<!-- ``` -->
+<!-- ```{r, fig.width=12, fig.height=6, message=FALSE} -->
+<!-- scMerge_unsupervised -->
+<!-- set.seed(1234) -->
+<!-- tsne_scMerge_unsupervised_cellTypes = scater::plotTSNE(scMerge_unsupervised,  -->
+<!--                                                      colour_by = "cellTypes", -->
+<!--                                                      run_args = list(exprs_values = "scMerge_unsupervised")) + -->
+<!--   scale_fill_brewer(palette = "Set1") -->
+<!-- set.seed(1234) -->
+<!-- tsne_scMerge_unsupervised_batch = scater::plotTSNE(scMerge_unsupervised,  -->
+<!--                                                  colour_by = "batch", -->
+<!--                                                  run_args = list(exprs_values = "scMerge_unsupervised")) + -->
+<!--   scale_fill_brewer(palette = "Dark2") -->
+<!-- ggpubr::ggarrange(tsne_scMerge_unsupervised_cellTypes, tsne_scMerge_unsupervised_batch, ncol = 2, nrow = 1) -->
+<!-- ``` -->
+<!-- # Extension topics -->
+<!-- ## Semi-supervised scMerge -->
+<!-- In any dataset, it is always a challenge to know what is the biological signal and what is noise. For example, in the context of this mouse liver data, we considered the variations between the Hepatoblast cells between the two batches as noise we wish to remove. However, we also know that these cells were sampled from different embryonic time points, so the variations between cells at different time points should be a biological signal that we would like to retain. In other words, we should consider cells of different cell types at different time points as pseudo-replicates.  -->
+<!-- In `scMerge`, we say that the time points information is the "wanted variation" and this is achieved through the `WV` parameter. In addition, we can also supply known development markers to guide the retention of the time point signals. We call this the "semi-supervised" version of `scMerge`, since it uses some parts of the label information.  -->
+<!-- ```{r, fig.width=5, fig.height=5} -->
+<!-- scMerge_semisupervised = scMerge( -->
+<!--   sce_combine = sce_combine, -->
+<!--   ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG), -->
+<!--   kmeansK = c(6, 2), -->
+<!--   replicate_prop = 1, -->
+<!--   WV = sce_combine$stage, -->
+<!--   WV_marker = c("ENSMUSG00000045394","ENSMUSG00000054932","ENSMUSG00000045394"), -->
+<!--   assay_name = "scMerge_semisupervised", -->
+<!--   verbose = TRUE) -->
+<!-- ``` -->
+<!-- ### Visualisation of semi-supervised scMerge -->
+<!-- ```{r, fig.width=12, fig.height=6, message=FALSE} -->
+<!-- scMerge_semisupervised -->
+<!-- set.seed(1234) -->
+<!-- tsne_scMerge_semisupervised_cellTypes = scater::plotTSNE(scMerge_semisupervised,  -->
+<!--                                                        colour_by = "cellTypes", -->
+<!--                                                        run_args = list(exprs_values = "scMerge_semisupervised")) + -->
+<!--   scale_fill_brewer(palette = "Set1") -->
+<!-- set.seed(1234) -->
+<!-- tsne_scMerge_semisupervised_batch = scater::plotTSNE(scMerge_semisupervised,  -->
+<!--                                                    colour_by = "batch", -->
+<!--                                                    run_args = list(exprs_values = "scMerge_semisupervised")) + -->
+<!--   scale_fill_brewer(palette = "Dark2") -->
+<!-- ggpubr::ggarrange(tsne_scMerge_semisupervised_cellTypes, tsne_scMerge_semisupervised_batch, ncol = 2, nrow = 1) -->
+<!-- ``` -->
+<!-- We will now visualise the Hepatoblast cells in the unsupervised scMerge result and then in the semi-supervised scMerge result. We will again use the tSNE plot, but this time, we will highlight the time point information. Notice that in the unsupervised scMerge result (left panel), `scMerge` removed the time points variations because we didn't tell it that this is biological variations that we wish to retain. -->
+<!-- ```{r, fig.width=12, fig.height=6, message=FALSE} -->
+<!-- set.seed(1234) -->
+<!-- tsne_scMerge_unsupervised_hept = scater::plotTSNE(scMerge_unsupervised[, scMerge_unsupervised$cellTypes == "Hepatoblast"],  -->
+<!--                                                        colour_by = "stage", -->
+<!--                                                        run_args = list(exprs_values = "scMerge_unsupervised")) + -->
+<!--   scale_fill_brewer(palette = "Set1") -->
+<!-- tsne_scMerge_semisupervised_hept = scater::plotTSNE(scMerge_semisupervised[, scMerge_semisupervised$cellTypes == "Hepatoblast"],  -->
+<!--                                                        colour_by = "stage", -->
+<!--                                                        run_args = list(exprs_values = "scMerge_semisupervised")) + -->
+<!--   scale_fill_brewer(palette = "Set1") -->
+<!-- ggpubr::ggarrange(tsne_scMerge_unsupervised_hept, tsne_scMerge_semisupervised_hept, ncol = 2, nrow = 1) -->
+<!-- ``` -->
+<!-- ## Speeding up scMerge -->
+<!-- The second component of scMerge contains some intense computations. For a large dataset, this component is slow. In order to fix this, we have implemented fast computational approximations for this component. While the output is only an approximation, it is usually numerically similar to a full run of scMerge and it can be up to 10 times faster for a large dataset.  -->
+<!-- ```{r, eval = FALSE, fig.width=5, fig.height=5} -->
+<!-- scMerge_fast <- scMerge( -->
+<!--   sce_combine = sce_combine, -->
+<!--   ctl = which(rownames(sce_combine) %in% segList_ensemblGeneID$mouse$mouse_scSEG), -->
+<!--   cell_type = sce_combine$cellTypes, -->
+<!--   replicate_prop = 1, -->
+<!--   assay_name = "scMerge_supervised", -->
+<!--   verbose = TRUE, -->
+<!--   fast_svd = TRUE,  -->
+<!--   rsvd_prop = 0.1) -->
+<!-- ``` -->
+<!-- ```{r, eval = FALSE, fig.width=12, fig.height=6, message=FALSE} -->
+<!-- scMerge_fast -->
+<!-- set.seed(1234) -->
+<!-- tsne_scMerge_fast_cellTypes = scater::plotTSNE(scMerge_fast,  -->
+<!--                                                colour_by = "cellTypes", -->
+<!--                                                run_args = list(exprs_values = "scMerge_fast")) + -->
+<!--   scale_fill_brewer(palette = "Set1") -->
+<!-- set.seed(1234) -->
+<!-- tsne_scMerge_fast_batch = scater::plotTSNE(scMerge_fast,  -->
+<!--                                            colour_by = "batch", -->
+<!--                                            run_args = list(exprs_values = "scMerge_fast")) + -->
+<!--   scale_fill_brewer(palette = "Dark2") -->
+<!-- ggpubr::ggarrange(tsne_scMerge_fast_cellTypes, tsne_scMerge_fast_batch, ncol = 2, nrow = 1) -->
+<!-- ``` -->
+</div>
+<div id="session-info" class="section level1">
+<h1><span class="header-section-number">2</span> Session Info</h1>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>## R version 3.6.0 (2017-01-27)
+## Platform: x86_64-pc-linux-gnu (64-bit)
+## Running under: Ubuntu 16.04.6 LTS
+## 
+## Matrix products: default
+## BLAS:   /home/travis/R-bin/lib/R/lib/libRblas.so
+## LAPACK: /home/travis/R-bin/lib/R/lib/libRlapack.so
+## 
+## locale:
+##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+## 
+## attached base packages:
+## [1] parallel  stats4    stats     graphics  grDevices utils     datasets 
+## [8] methods   base     
+## 
+## other attached packages:
+##  [1] forcats_0.4.0               stringr_1.4.0              
+##  [3] ggpubr_0.2.1                magrittr_1.5               
+##  [5] scales_1.0.0                ggplot2_3.2.0              
+##  [7] dplyr_0.8.3                 DropletUtils_1.5.4         
+##  [9] SingleCellExperiment_1.7.0  SummarizedExperiment_1.15.5
+## [11] DelayedArray_0.11.4         BiocParallel_1.19.0        
+## [13] matrixStats_0.54.0          Biobase_2.45.0             
+## [15] GenomicRanges_1.37.14       GenomeInfoDb_1.21.1        
+## [17] IRanges_2.19.10             S4Vectors_0.23.17          
+## [19] BiocGenerics_0.31.5        
+## 
+## loaded via a namespace (and not attached):
+##  [1] Rcpp_1.0.1             locfit_1.5-9.1         lattice_0.20-38       
+##  [4] zeallot_0.1.0          assertthat_0.2.1       digest_0.6.20         
+##  [7] utf8_1.1.4             plyr_1.8.4             R6_2.4.0              
+## [10] backports_1.1.4        evaluate_0.14          pillar_1.4.2          
+## [13] zlibbioc_1.31.0        rlang_0.4.0            lazyeval_0.2.2        
+## [16] R.utils_2.9.0          R.oo_1.22.0            Matrix_1.2-17         
+## [19] rmarkdown_1.13         labeling_0.3           RCurl_1.95-4.12       
+## [22] munsell_0.5.0          HDF5Array_1.13.4       compiler_3.6.0        
+## [25] xfun_0.8               pkgconfig_2.0.2        htmltools_0.3.6       
+## [28] tidyselect_0.2.5       gridExtra_2.3          tibble_2.1.3          
+## [31] GenomeInfoDbData_1.2.1 edgeR_3.27.6           fansi_0.4.0           
+## [34] crayon_1.3.4           withr_2.1.2            bitops_1.0-6          
+## [37] R.methodsS3_1.7.1      grid_3.6.0             gtable_0.3.0          
+## [40] dqrng_0.2.1            cli_1.1.0              stringi_1.4.3         
+## [43] reshape2_1.4.3         XVector_0.25.0         ggsignif_0.5.0        
+## [46] limma_3.41.6           ellipsis_0.2.0.1       vctrs_0.2.0           
+## [49] cowplot_0.9.4          Rhdf5lib_1.7.2         tools_3.6.0           
+## [52] glue_1.3.1             purrr_0.3.2            yaml_2.2.0            
+## [55] colorspace_1.4-1       rhdf5_2.29.0           knitr_1.23</code></pre>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
