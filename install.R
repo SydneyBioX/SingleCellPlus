@@ -21,11 +21,10 @@ builtins <- c(
 	"plyr", "Rtsne", 
 	"scales", "scater", 
 	"scran", "tidyverse", 
-	"viridis", "monocle",
-	"kevinwang09/scdney")
+	"viridis", "monocle")
 
 for (builtin in builtins)
     if (!suppressWarnings(require(builtin, character.only=TRUE)))
         suppressWarnings(BiocManager::install(builtin,
                                               version="3.10",
-                                              update=TRUE, ask=FALSE))
+                                              update=FALSE, ask=FALSE))
