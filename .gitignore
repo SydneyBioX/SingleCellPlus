@@ -38,3 +38,5 @@ rsconnect/
 data/liver_scMerge.rds
 .Rproj.user
 SingleCellPlus_zip
+data/
+.DS_Store
