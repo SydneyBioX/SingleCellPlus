@@ -58,7 +58,10 @@ In the scMerge publication, we have merged [four mouse liver datasets](https://s
 
 
 ```{r}
-sce_scMerge = readRDS("data/liver_scMerge.rds")
+# datapath = "./data/"
+datapath = "/home/rstudio/data/"
+sce_scMerge = readRDS(paste0(datapath, "data/liver_scMerge.rds"))
+
 ## We will subset Su et al. and Yang et al. datasets.
 ids = colData(sce_scMerge)$batch %in% c("GSE87795", "GSE90047")
 
@@ -145,7 +148,7 @@ simlr_results = sapply(as.character(all_k), function(k) {
 
 ```{r, include = FALSE}
 ## To make the knitting faster, we will load the precomputed results.
-load("data/simlr.results.RData")
+load(paste0(datapath, "simlr.results.RData"))
 simlr_result_k6 = simlr_results$`6`
 ```
 
@@ -204,7 +207,7 @@ For the purpose of demonstration, we would like to highlight the effect of simil
 ## simlr_result_eucl_k6 = scClust(mat, 6, similarity = "euclidean", method = "simlr", seed = 1, cores.ratio = 0, geneFilter = 0)
 
 ## for convenience, we will load our pre-computed result
-load("data/simlr_result_eucl_k6.RData")
+load(paste0(datapath, "simlr_result_eucl_k6.RData"))
 ```
 
 
@@ -326,7 +329,7 @@ marker_cluster4 = findMarker(mat = mat,
 
 
 ```{r, include = FALSE}
-marker_cluster4 = readRDS("data/marker_cluster4.rds")
+marker_cluster4 = readRDS(paste0(datapath, "marker_cluster4.rds"))
 ```
 
 
@@ -361,7 +364,7 @@ ggplot(data = tsne_plotdf, aes(x = tsne1, y = tsne2, colour = Gys2) ) +
 1. Here we repeat the analysis as above, but for cluster 3. See if you can understand the output.
 
 ```{r}
-marker_cluster3 = readRDS("data/marker_cluster3.rds")
+marker_cluster3 = readRDS(paste0(datapath, "marker_cluster3.rds"))
 ```
 
 ```{r, message=FALSE, warning=FALSE}

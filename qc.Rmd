@@ -44,7 +44,9 @@ The dataset of read counts is stored in a `csv` file (which is simply an Excel f
 
 
 ```{r}
-liver = read.csv(file = "data/GSE87795_counts.csv",
+# datapath = "./data/"
+datapath = "/home/rstudio/data/"
+liver = read.csv(file = paste0(datapath, "GSE87795_counts.csv"),
                  header = TRUE,
                  row.names = 1)
 ```

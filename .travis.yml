@@ -18,13 +18,13 @@ cache:
 script:
   - wget "http://shiny.maths.usyd.edu.au/singlecellplus/SingleCellPlus_zip.zip" -P .
   - unzip ./SingleCellPlus_zip.zip
-  - ls
-  - ls ./data
   - rm -rf ./SingleCellPlus_zip.zip
   - rm -rf ./SingleCellPlus.RProj
   - rm -rf ./__MACOSX
   - Rscript -e 'BiocManager::version()'
   - Rscript -e 'source("./install.R")'
+  - ls
+  - ls ./data
   - R -e 'rmarkdown::render_site()'
 
 deploy:
