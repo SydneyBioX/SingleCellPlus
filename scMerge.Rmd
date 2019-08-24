@@ -65,7 +65,7 @@ Note: In the scMerge publication, we have merged [four mouse liver datasets](htt
 
 ```{r}
 # datapath = "./data/"
-datapath = "/home/rstudio/data/"
+datapath = "/home/SingleCellPlus/data/"
 
 su = readRDS(paste0(datapath, "sce_GSE87795.rds"))
 yang = readRDS(paste0(datapath,"sce_GSE90047.rds"))
