@@ -45,7 +45,7 @@ The dataset of read counts is stored in a `csv` file (which is simply an Excel f
 
 ```{r}
 # datapath = "./data/"
-datapath = "/home/SingleCellPlus/data/"
+datapath = "/home/data/"
 liver = read.csv(file = paste0(datapath, "GSE87795_counts.csv"),
                  header = TRUE,
                  row.names = 1)

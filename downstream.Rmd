@@ -59,7 +59,7 @@ In the scMerge publication, we have merged [four mouse liver datasets](https://s
 
 ```{r}
 # datapath = "./data/"
-datapath = "/home/SingleCellPlus/data/"
+datapath = "/home/data/"
 sce_scMerge = readRDS(paste0(datapath, "liver_scMerge.rds"))
 
 ## We will subset Su et al. and Yang et al. datasets.
