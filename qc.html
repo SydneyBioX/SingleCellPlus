@@ -7,6 +7,7 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 <meta name="author" content="Sydney Precision Bioinformatics Group" />
@@ -89,7 +90,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -250,56 +250,12 @@ $(document).ready(function () {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 <style type="text/css">
 .code-folding-btn { margin-bottom: 4px; }
 </style>
-<script>
-$(document).ready(function () {
-  window.initializeCodeFolding("show" === "show");
-});
-</script>
 
 
-
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2,h3",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = true;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
 
 <style type="text/css">
 
@@ -458,7 +414,9 @@ theme_set(theme_classic(16))</code></pre>
 <li><code>header = TRUE</code> means that we will take the first row of the file as the column names.</li>
 <li><code>row.names = 1</code> means that we will take the first column of the file as the row names.</li>
 </ul>
-<pre class="r"><code>liver = read.csv(file = &quot;data/GSE87795_counts.csv&quot;, 
+<pre class="r"><code>datapath = &quot;./data/&quot;
+# datapath = &quot;/home/data/&quot;
+liver = read.csv(file = paste0(datapath, &quot;GSE87795_counts.csv&quot;),
                  header = TRUE,
                  row.names = 1)</code></pre>
 <p>First, let’s check some basics of this data. This dataset contains 51918 rows and 507 columns. Each row corresponds to a gene, and each column corresponds to a cell. The first five rows and five columns of the dataset can be shown using <code>liver[1:5, 1:5]</code>.</p>
@@ -473,7 +431,7 @@ theme_set(theme_classic(16))</code></pre>
 ## ENSMUSG00000103377         0         0         0         0         0</code></pre>
 <p>Notice that the column names of this data contain information regarding the developmental stage of each cell when it was sequenced duing the experiment. We can clean up this information using a short line of code.</p>
 <p>With some code, we can produce a frequency table of the number of cells at each developmental stage.</p>
-<pre class="r"><code>stage = str_split(colnames(liver), &quot;_&quot;) %&gt;% 
+<pre class="r"><code>stage = str_split(colnames(liver), &quot;_&quot;) %&gt;%
   sapply(&quot;[[&quot;, 1)
 
 table(stage)</code></pre>
@@ -515,15 +473,15 @@ barcode_points = data.frame(
 
 ggplot(data = barcode_data, aes(x = rank, y = total)) +
   geom_point() +
-  geom_hline(data = barcode_points, 
-             aes(yintercept = value, 
+  geom_hline(data = barcode_points,
+             aes(yintercept = value,
                  colour = type), linetype = 2) +
   scale_x_log10(breaks = trans_breaks(&quot;log10&quot;, function(x) 10^x),
                 labels = trans_format(&quot;log10&quot;, math_format(10^.x))) +
   scale_y_log10(breaks = trans_breaks(&quot;log10&quot;, function(x) 10^x),
                 labels = trans_format(&quot;log10&quot;, math_format(10^.x))) +
-  labs(title = &quot;Waterfall plot of read counts (log)&quot;, 
-       x = &quot;Log Rank&quot;, 
+  labs(title = &quot;Waterfall plot of read counts (log)&quot;,
+       x = &quot;Log Rank&quot;,
        y = &quot;Log counts&quot;)</code></pre>
 <p><img src="qc_files/figure-html/unnamed-chunk-5-1.png" width="768" /></p>
 <h4>
@@ -545,10 +503,10 @@ ggplot(data = barcode_data, aes(x = rank, y = total)) +
 <p>For the ease of visualisation, we will subset our <code>cell_plotdf_full</code> to only those cells in the 11.5, 12.5 and 13.5 development stage. Then, we will also calculate the mean of <code>library</code> and <code>num_genes</code> for <em>each</em> development stage.</p>
 <pre class="r"><code>cell_plotdf_full = data.frame(
   cell_name = colnames(liver),
-  stage = stage, 
+  stage = stage,
   library = colSums(liver),
   num_genes = colSums(liver != 0)
-) 
+)
 
 head(cell_plotdf_full)</code></pre>
 <pre><code>##           cell_name stage library num_genes
@@ -558,13 +516,13 @@ head(cell_plotdf_full)</code></pre>
 ## E11.5_C06 E11.5_C06 E11.5 1995783     10814
 ## E11.5_C07 E11.5_C07 E11.5 3690986     10825
 ## E11.5_C09 E11.5_C09 E11.5 2264731      6489</code></pre>
-<pre class="r"><code>cell_plotdf = cell_plotdf_full %&gt;% 
+<pre class="r"><code>cell_plotdf = cell_plotdf_full %&gt;%
  dplyr::filter(stage %in% c(&quot;E11.5&quot;, &quot;E12.5&quot;, &quot;E13.5&quot;))
 
 
-cell_plotdf_mean = cell_plotdf %&gt;% 
-  dplyr::group_by(stage) %&gt;% 
-  dplyr::summarise(library_mean = mean(library), 
+cell_plotdf_mean = cell_plotdf %&gt;%
+  dplyr::group_by(stage) %&gt;%
+  dplyr::summarise(library_mean = mean(library),
                    num_genes_mean = mean(num_genes))
 
 
@@ -575,35 +533,35 @@ cell_plotdf_mean</code></pre>
 ## 1 E11.5     2838642.          9262.
 ## 2 E12.5     3094663.          9346.
 ## 3 E13.5     3639297.          9813.</code></pre>
-<pre class="r"><code>ggplot(cell_plotdf, 
+<pre class="r"><code>ggplot(cell_plotdf,
        aes(x = library/1e6, colour = stage, fill = stage)) +
-  geom_histogram(aes(y = ..density..), colour = &quot;black&quot;, fill = &quot;white&quot;, bins = 30) + 
-  geom_density(alpha = 0.4) + 
-  geom_vline(data = cell_plotdf_mean, 
-             aes(xintercept = library_mean/1e6), 
+  geom_histogram(aes(y = ..density..), colour = &quot;black&quot;, fill = &quot;white&quot;, bins = 30) +
+  geom_density(alpha = 0.4) +
+  geom_vline(data = cell_plotdf_mean,
+             aes(xintercept = library_mean/1e6),
              colour = &quot;blue&quot;, linetype = &quot;dashed&quot;, size = 1.5) +
   # scale_x_continuous(breaks = 1:6) +
-  labs(title = &quot;Histogram of library size&quot;, 
-       x = &quot;library size (in millions)&quot;, 
-       y = &quot;density&quot;) + 
-  facet_wrap(~ stage, ncol = 3) </code></pre>
+  labs(title = &quot;Histogram of library size&quot;,
+       x = &quot;library size (in millions)&quot;,
+       y = &quot;density&quot;) +
+  facet_wrap(~ stage, ncol = 3)</code></pre>
 <p><img src="qc_files/figure-html/unnamed-chunk-6-1.png" width="768" /></p>
 <p>When we compare the distribution of librarzy size for all cells at three developmental stages, we can see that mean library size is lowest in E11.5 cells (mean = 2.838642 million) and highest in E13.5 cells (mean = 3.639297 million). E12.5 cells (mean = 3.094663 million) have a greater distribution of cells with few reads. Cells with very few reads are likely to have failed to capture the transcriptome of a cell, and thus should be filtered.</p>
 </div>
 <div id="qc3-number-of-uniquely-expressed-genes" class="section level1">
 <h1><span class="header-section-number">5</span> QC3: Number of uniquely expressed genes</h1>
 <p>Closely related to the idea of a library size is the number of uniquly expressed genes. In addition to sequencing depth, we can also filter for cells that express genes with sufficiently good coverage of the transcriptome. This is to ensure that we capture cells with not only sufficient reads but also those that have reads that are relatively evenly distributed across the transcriptome. To this end, we measure the number of uniquely expressed genes in individual cells.</p>
-<pre class="r"><code>ggplot(cell_plotdf, 
+<pre class="r"><code>ggplot(cell_plotdf,
        aes(x = num_genes/1000, colour = stage, fill = stage)) +
-  geom_histogram(aes(y = ..density..), colour = &quot;black&quot;, fill = &quot;white&quot;, bins = 30) + 
-  geom_density(alpha = 0.4) + 
+  geom_histogram(aes(y = ..density..), colour = &quot;black&quot;, fill = &quot;white&quot;, bins = 30) +
+  geom_density(alpha = 0.4) +
   geom_vline(data = cell_plotdf_mean,
-             aes(xintercept = num_genes_mean/1000), 
+             aes(xintercept = num_genes_mean/1000),
              colour = &quot;blue&quot;, linetype = &quot;dashed&quot;, size = 1.5) +
-  labs(title = &quot;Histogram of number of unique genes expressed&quot;, 
-       x = &quot;Number of unique genes expressed (in thousands)&quot;, 
-       y = &quot;density&quot;) + 
-  facet_wrap(~ stage, ncol = 3) </code></pre>
+  labs(title = &quot;Histogram of number of unique genes expressed&quot;,
+       x = &quot;Number of unique genes expressed (in thousands)&quot;,
+       y = &quot;density&quot;) +
+  facet_wrap(~ stage, ncol = 3)</code></pre>
 <p><img src="qc_files/figure-html/unnamed-chunk-7-1.png" width="768" /></p>
 <p>From above, we can see that most cells have between 9000-10,000 detected genes. This is roughly the amount expected for high-depth scRNA-seq; however, the expected value may vary between experimental protocols, sequencing depth, and cell type used. Note that, unlike library size, a “heavy tail” can be observed for each of the distribution, indicating an unequal detection of genes across populations. Filtering out cells with low number of genes identified is another way to improve the quality of the dataset.</p>
 </div>
@@ -617,14 +575,14 @@ liver_mito = liver[mito_genes, ]
 
 mito_plotdf_full = data.frame(
   cell_name = colnames(liver_mito),
-  stage = stage, 
+  stage = stage,
   mito_percent = colSums(liver_mito)/colSums(liver) * 100
-) 
+)
 
 mito_plotdf = mito_plotdf_full %&gt;% dplyr::filter(stage %in% c(&quot;E11.5&quot;, &quot;E12.5&quot;, &quot;E13.5&quot;))
 
-mito_plotdf_mean = mito_plotdf %&gt;% 
-  group_by(stage) %&gt;% 
+mito_plotdf_mean = mito_plotdf %&gt;%
+  group_by(stage) %&gt;%
   dplyr::summarise(mito_percent_mean = mean(mito_percent))
 
 mito_plotdf_mean</code></pre>
@@ -634,23 +592,23 @@ mito_plotdf_mean</code></pre>
 ## 1 E11.5              7.61
 ## 2 E12.5              6.99
 ## 3 E13.5              5.35</code></pre>
-<pre class="r"><code>g1 = ggplot(mito_plotdf, 
+<pre class="r"><code>g1 = ggplot(mito_plotdf,
        aes(x = mito_percent, colour = stage, fill = stage)) +
-  geom_histogram(aes(y = ..density..), colour = &quot;black&quot;, fill = &quot;white&quot;, bins = 30) + 
-  geom_density(alpha = 0.4) + 
+  geom_histogram(aes(y = ..density..), colour = &quot;black&quot;, fill = &quot;white&quot;, bins = 30) +
+  geom_density(alpha = 0.4) +
   geom_vline(data = mito_plotdf_mean,
-             aes(xintercept = mito_percent_mean), 
+             aes(xintercept = mito_percent_mean),
              colour = &quot;blue&quot;, linetype = &quot;dashed&quot;, size = 1.5) +
-  labs(x = &quot;Mitochondrial percentage&quot;, 
-       y = &quot;Density&quot;) + 
-  facet_wrap(~ stage, nrow = 3) 
+  labs(x = &quot;Mitochondrial percentage&quot;,
+       y = &quot;Density&quot;) +
+  facet_wrap(~ stage, nrow = 3)
 
 
-g2 = ggplot(mito_plotdf, 
-            aes(x = stage, 
-                y = mito_percent, 
+g2 = ggplot(mito_plotdf,
+            aes(x = stage,
+                y = mito_percent,
                 fill = stage)) +
-  geom_violin(alpha = 0.8, draw_quantiles = 0.5) + 
+  geom_violin(alpha = 0.8, draw_quantiles = 0.5) +
   labs(y = &quot;Mitochondrial percentage&quot;)
 
 ggpubr::ggarrange(g1, g2, ncol=  2, common.legend = TRUE, legend = &quot;right&quot;)</code></pre>
@@ -660,8 +618,7 @@ ggpubr::ggarrange(g1, g2, ncol=  2, common.legend = TRUE, legend = &quot;right&q
 <span class="glyphicon glyphicon-education" aria-hidden="true"></span> Quick quiz
 </h4>
 <ol style="list-style-type: decimal">
-<li>Based on the figure above, would you say most cells are unhealthy or healthy?<br />
-</li>
+<li>Based on the figure above, would you say most cells are unhealthy or healthy?</li>
 <li>How does the percentage of mitochondrial gene expression change over time point?</li>
 </ol>
 </div>
@@ -669,9 +626,9 @@ ggpubr::ggarrange(g1, g2, ncol=  2, common.legend = TRUE, legend = &quot;right&q
 <h1><span class="header-section-number">7</span> QC5: Contribution by the top 50 expressed genes</h1>
 <p>As well as the above metrics, it is often instructive to know the proportions of the reads consumed by the top 50 expressed genes. Moreover, an assessment of the top gene list before and after filtering can give you a good indication of whether the filtering has been successful, as the top genes are often occupied by mitochondrial genes from unhealthy cells.</p>
 <p>We can calculate the top 50 expressed genes for all cells as shown below.</p>
-<pre class="r"><code>## We will go to each column of the matrix, and divide the column by its sum 
-## and convert this into a percentage. 
-## The result is a matrix with each column that sum up to 100%. 
+<pre class="r"><code>## We will go to each column of the matrix, and divide the column by its sum
+## and convert this into a percentage.
+## The result is a matrix with each column that sum up to 100%.
 liver_percent = sweep(liver, 2, STATS = colSums(liver), FUN = &quot;/&quot;) * 100
 
 liver_percent %&gt;% colSums %&gt;% head</code></pre>
@@ -682,18 +639,18 @@ liver_percent %&gt;% colSums %&gt;% head</code></pre>
 top50Genes = liver_percent_meanEachGene %&gt;% sort(decreasing = TRUE) %&gt;% head(50) %&gt;% names
 
 
-liver_percent_plotdf = liver_percent[top50Genes, ] %&gt;% 
-  as.matrix %&gt;% 
+liver_percent_plotdf = liver_percent[top50Genes, ] %&gt;%
+  as.matrix %&gt;%
   reshape2::melt(varnames = c(&quot;gene_name&quot;, &quot;cell_name&quot;),
-                 value.name = &quot;percent&quot;) %&gt;% 
+                 value.name = &quot;percent&quot;) %&gt;%
   dplyr::mutate(gene_name = fct_reorder(gene_name, percent, mean))
 
-liver_percent_plotdf %&gt;% 
+liver_percent_plotdf %&gt;%
   ggplot(aes(x = gene_name, y = percent, colour = gene_name)) +
   geom_violin() +
   geom_jitter(alpha = 0.2) +
   coord_flip() +
-  labs(x = &quot;percent of library&quot;, 
+  labs(x = &quot;percent of library&quot;,
        y = &quot;genes&quot;,
        title = &quot;Top 50 genes for all cell stages&quot;) +
   theme(legend.position = &quot;none&quot;)</code></pre>
@@ -707,18 +664,18 @@ liver_percent_split_meanEachGene = liver_percent_split %&gt;% lapply(rowMeans)
 
 e115_top50 = liver_percent_split_meanEachGene$E11.5 %&gt;% sort(decreasing = TRUE) %&gt;% head(50) %&gt;% names
 
-e115_liver_percent = liver_percent[e115_top50, stage == &quot;E11.5&quot;] %&gt;% 
-  as.matrix %&gt;% 
+e115_liver_percent = liver_percent[e115_top50, stage == &quot;E11.5&quot;] %&gt;%
+  as.matrix %&gt;%
   reshape2::melt(varnames = c(&quot;gene_name&quot;, &quot;cell_name&quot;),
-                 value.name = &quot;percent&quot;) %&gt;% 
+                 value.name = &quot;percent&quot;) %&gt;%
   dplyr::mutate(gene_name = fct_reorder(gene_name, percent, mean))
 
-e115_liver_percent %&gt;% 
+e115_liver_percent %&gt;%
   ggplot(aes(x = gene_name, y = percent, colour = gene_name)) +
   geom_violin() +
   geom_jitter(alpha = 0.2) +
   coord_flip() +
-  labs(x = &quot;genes&quot;, 
+  labs(x = &quot;genes&quot;,
        y = &quot;percent of library&quot;,
        title = &quot;Top 50 expressed genes for E11.5 cells&quot;) +
   theme(legend.position = &quot;none&quot;)</code></pre>
@@ -779,36 +736,36 @@ dim(liver_new2)</code></pre>
 ## 
 ## other attached packages:
 ##  [1] forcats_0.4.0               stringr_1.4.0              
-##  [3] ggpubr_0.2                  magrittr_1.5               
-##  [5] scales_1.0.0                ggplot2_3.1.1              
-##  [7] dplyr_0.8.1                 DropletUtils_1.5.3         
-##  [9] SingleCellExperiment_1.7.0  SummarizedExperiment_1.15.2
-## [11] DelayedArray_0.11.0         BiocParallel_1.19.0        
+##  [3] ggpubr_0.2.2                magrittr_1.5               
+##  [5] scales_1.0.0                ggplot2_3.2.1              
+##  [7] dplyr_0.8.3                 DropletUtils_1.5.6         
+##  [9] SingleCellExperiment_1.7.5  SummarizedExperiment_1.15.7
+## [11] DelayedArray_0.11.4         BiocParallel_1.19.2        
 ## [13] matrixStats_0.54.0          Biobase_2.45.0             
-## [15] GenomicRanges_1.37.11       GenomeInfoDb_1.21.1        
-## [17] IRanges_2.19.10             S4Vectors_0.23.12          
-## [19] BiocGenerics_0.31.4        
+## [15] GenomicRanges_1.37.14       GenomeInfoDb_1.21.1        
+## [17] IRanges_2.19.12             S4Vectors_0.23.19          
+## [19] BiocGenerics_0.31.5        
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_1.0.1             locfit_1.5-9.1         lattice_0.20-38       
-##  [4] zeallot_0.1.0          assertthat_0.2.1       digest_0.6.19         
-##  [7] utf8_1.1.4             R6_2.4.0               plyr_1.8.4            
-## [10] backports_1.1.4        evaluate_0.14          pillar_1.4.1          
-## [13] zlibbioc_1.31.0        rlang_0.3.4            lazyeval_0.2.2        
+##  [1] Rcpp_1.0.2             locfit_1.5-9.1         lattice_0.20-38       
+##  [4] zeallot_0.1.0          assertthat_0.2.1       digest_0.6.20         
+##  [7] utf8_1.1.4             plyr_1.8.4             R6_2.4.0              
+## [10] backports_1.1.4        evaluate_0.14          pillar_1.4.2          
+## [13] zlibbioc_1.31.0        rlang_0.4.0            lazyeval_0.2.2        
 ## [16] R.utils_2.9.0          R.oo_1.22.0            Matrix_1.2-17         
-## [19] rmarkdown_1.13         labeling_0.3           RCurl_1.95-4.12       
-## [22] munsell_0.5.0          HDF5Array_1.13.2       compiler_3.6.0        
-## [25] xfun_0.7               pkgconfig_2.0.2        htmltools_0.3.6       
+## [19] rmarkdown_1.15         labeling_0.3           RCurl_1.95-4.12       
+## [22] munsell_0.5.0          HDF5Array_1.13.5       compiler_3.6.0        
+## [25] xfun_0.9               pkgconfig_2.0.2        htmltools_0.3.6       
 ## [28] tidyselect_0.2.5       gridExtra_2.3          tibble_2.1.3          
-## [31] GenomeInfoDbData_1.2.1 edgeR_3.27.4           fansi_0.4.0           
+## [31] GenomeInfoDbData_1.2.1 edgeR_3.27.12          fansi_0.4.0           
 ## [34] crayon_1.3.4           withr_2.1.2            bitops_1.0-6          
 ## [37] R.methodsS3_1.7.1      grid_3.6.0             gtable_0.3.0          
 ## [40] dqrng_0.2.1            cli_1.1.0              stringi_1.4.3         
-## [43] reshape2_1.4.3         XVector_0.25.0         limma_3.41.3          
-## [46] ellipsis_0.1.0         vctrs_0.1.0            cowplot_0.9.4         
-## [49] Rhdf5lib_1.7.2         tools_3.6.0            glue_1.3.1            
-## [52] purrr_0.3.2            yaml_2.2.0             colorspace_1.4-1      
-## [55] rhdf5_2.29.0           knitr_1.23</code></pre>
+## [43] reshape2_1.4.3         XVector_0.25.0         ggsignif_0.6.0        
+## [46] limma_3.41.15          ellipsis_0.2.0.1       vctrs_0.2.0           
+## [49] cowplot_1.0.0          Rhdf5lib_1.7.4         tools_3.6.0           
+## [52] glue_1.3.1             purrr_0.3.2            yaml_2.2.0            
+## [55] colorspace_1.4-1       rhdf5_2.29.0           knitr_1.24</code></pre>
 </div>
 
 
@@ -829,6 +786,54 @@ $(document).ready(function () {
 });
 
 
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
 </script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

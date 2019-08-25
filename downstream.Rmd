@@ -500,9 +500,10 @@ monocle_data
 monocle_CellDataSet = scran::convertTo(
   monocle_data,
   type = "monocle",
-  assay.type = "scMerge",
-  col.fields = c("cellTypes", "stage", "batch"),
-  row.fields = c("gene_short_name")) %>%
+  assay.type = "scMerge"
+  # col.fields = c("cellTypes", "stage", "batch"),
+  # row.fields = c("gene_short_name")
+  ) %>%
   estimateSizeFactors()
 
 ## Performing differential gene test using "stage".
