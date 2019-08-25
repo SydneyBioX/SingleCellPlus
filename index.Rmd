@@ -9,6 +9,9 @@ output: html_document
 
 This workshop is part of a joint research initiative between Hong Kong University and the University of Sydney.
 
+# Update on August 2019
+
+We will move this workshop to Google Cloud in the future. Some materials needs to be re-written.
 
 # Aim of this workshop
 
